@@ -1,0 +1,339 @@
+/* src/styles/auth.design.css */
+
+/* -------------------------
+   Color tokens - change to match Figma if needed
+   ------------------------- */
+:root{
+  --grad-left: #2f7df6;   /* deep blue */
+  --grad-right: #ef4b3b;  /* warm red */
+  --light-mid: #e8eefc;   /* pale center tint */
+  --card-bg: rgba(255,255,255,0.18);
+  --card-border: rgba(255,255,255,0.32);
+  --glass-shadow: rgba(7,18,36,0.08);
+  --cta-left: #2f7df6;
+  --cta-right: #7b8af3;
+  --cta-text: #fff;
+  --text: #0b1220;
+}
+
+/* page background gradient */
+.di-page{
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: center;
+  padding: 40px;
+  background: linear-gradient(90deg, var(--grad-left) 0%, var(--light-mid) 50%, var(--grad-right) 100%);
+  box-sizing: border-box;
+}
+
+/* reverse order for signup (form left, image right) */
+.di-page.di-reverse {
+  direction: ltr; /* ensures layout is normal, but we flip cards below */
+}
+
+/* common card */
+.di-card{
+  border-radius: 34px;
+  overflow: visible;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* image card styling */
+.di-image-card {
+  padding: 28px;
+}
+/* IMAGE CONTAINER: NO GLASS — only outer shadow and rounded frame */
+.di-image-inner {
+  width: 100%;
+  max-width: 700px;
+  border-radius: 34px;
+  overflow: hidden;
+
+  /* remove glass background and blur */
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
+  /* keep a clean outer shadow for depth */
+  box-shadow: 0 18px 40px rgba(2,6,23,0.12);
+  padding: 0; /* remove inner padding so image reaches the rounded edge */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* IMAGE: remove inset highlight so image looks clean (no glass) */
+.di-image-inner img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  display:block;
+  border-radius: 22px;
+  box-shadow: none; /* remove inset highlight */
+  background: transparent;
+  filter: none; /* ensure no blur/opacity/filter applied */
+}
+
+/* form card: glass */
+.di-form-card{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 20px;
+}
+.di-form-inner{
+  width:100%;
+  max-width: 480px;
+  padding: 34px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px var(--glass-shadow);
+}
+
+/* titles */
+.di-title{
+  font-family: 'Poppins', system-ui, Arial, sans-serif;
+  font-size: 28px;
+  text-align: center;
+  color: var(--text);
+  margin: 0 0 18px;
+  font-weight: 700;
+}
+
+/* form & fields */
+.di-form { display:flex; flex-direction:column; gap:16px; }
+
+.di-field { display:flex; flex-direction:column; gap:6px; }
+.di-label { font-size:13px; color: rgba(11,18,32,0.7); padding-left:4px; }
+.di-input-wrap {
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding-right:42px; /* room for icon */
+}
+.di-input {
+  width:100%;
+  border: none;
+  border-bottom: 2px solid rgba(11,18,32,0.85);
+  padding: 8px 6px;
+  font-size:15px;
+  background: transparent;
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.di-input::placeholder { color: rgba(11,18,32,0.35); }
+.di-input:focus { box-shadow: 0 6px 30px rgba(47,125,246,0.12); border-bottom-color: rgba(47,125,246,0.95); }
+
+/* icon placed at right end of input row (same visual as design) */
+.di-icon {
+  position:absolute;
+  right:6px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* error */
+.di-error .di-input { border-bottom-color: #e24b4b; }
+.di-field-error { color: #e24b4b; font-size:12px; margin-top:6px; }
+
+/* CTA button — rounded pill with gradient + inner shadow */
+.di-cta {
+  margin-top:8px;
+  padding: 12px 18px;
+  border-radius: 26px;
+  background: linear-gradient(90deg, var(--cta-left), var(--cta-right));
+  color: var(--cta-text);
+  border: none;
+  font-weight: 700;
+  font-size:16px;
+  cursor: pointer;
+  box-shadow: inset 0 -6px 18px rgba(0,0,0,0.12), 0 6px 18px rgba(7,18,36,0.12);
+  transition: transform .12s ease;
+}
+.di-cta:active { transform: translateY(1px) scale(.998); }
+.di-cta:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+/* links under button */
+.di-links {
+  display:flex;
+  justify-content:space-between;
+  margin-top: 12px;
+  font-size: 14px;
+  color: rgba(11,18,32,0.8);
+}
+.di-links.single { justify-content:center; }
+.di-link-left, .di-link-right { color: rgba(11,18,32,0.85); text-decoration: none; }
+.di-link-right { color: rgba(11,18,32,0.85); }
+
+/* select style */
+.di-select-row { margin-top: 6px; }
+.di-select {
+  width:100%;
+  padding:10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(11,18,32,0.12);
+  font-size:14px;
+}
+
+/* responsiveness: stack on small screens */
+@media (max-width: 900px) {
+  .di-page {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 18px;
+  }
+  .di-image-inner { max-width: 100%; height: auto; }
+  .di-form-inner { padding: 22px; }
+  .di-title { font-size: 22px; }
+}
+
+/* tiny screens: compact spacing */
+@media (max-width: 420px) {
+  .di-form-inner { padding: 16px; }
+  .di-cta { font-size: 15px; padding: 10px 14px; }
+}
+
+/* ---------- Layout fix: remove right gap & make full-bleed safe ---------- */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* prevent horizontal scroll that causes right black bar */
+}
+
+/* ensure the page uses full viewport width and centers content nicely */
+.di-page {
+  min-height: 100vh;
+  width: 100vw;           /* full viewport width to avoid unexpected gaps */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: center;
+  padding: 40px 56px;     /* left/right padding to match design margins */
+  box-sizing: border-box;
+  overflow: hidden;       /* avoid children overflowing and causing scrollbars */
+}
+
+/* slightly tighten columns so cards sit more centered on many screens */
+@media (min-width: 1100px) {
+  .di-page { grid-template-columns: 48% 48%; }
+}
+
+/* For smaller screens keep single column (unchanged) */
+@media (max-width: 900px) {
+  .di-page {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 18px;
+    width: 100%;
+  }
+}
+
+/* ---------- IMAGE CARD: remove glass from image only ---------- */
+/* Keep rounded card and subtle shadow but no translucent glass fill or blur */
+.di-image-card {
+  padding: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- FORM CARD: keep glass effect (unchanged visually) ---------- */
+.di-form-card {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 20px;
+}
+
+/* keep the existing glass look for the form — but nudge centering */
+.di-form-inner {
+  width:100%;
+  max-width: 480px;
+  padding: 34px;
+  border-radius: 28px;
+  /* keep glass look */
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px var(--glass-shadow);
+  margin-left: 0;  /* ensure consistent centering */
+}
+
+/* small tweak to ensure the form card sits visually centered vertically and horizontally */
+@media (min-width: 1000px) {
+  .di-form-card { justify-content: start; } /* keep form closer to middle area */
+  .di-form-inner { transform: translateX(6%); } /* subtle nudge toward center */
+}
+
+/* on small screens remove translate so it stays fully centered */
+@media (max-width: 999px) {
+  .di-form-inner { transform: none; }
+}
+
+/* ---------- Auth header INSIDE card (compact, card-top) ---------- */
+/* Remove the previous grid-span behavior and make header fit inside the form card */
+.di-auth-header-wrap {
+  display: block;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.di-auth-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-start;
+  max-width: 420px;      /* keep header constrained to card width */
+  width: 100%;
+}
+
+/* logo sized to fit inside card header */
+.di-auth-logo {
+  width: 48px;          /* medium/compact size for inside-card header */
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: transparent;
+  display: block;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+}
+
+/* texts (card-top styling) */
+.di-auth-texts { display:flex; flex-direction:column; gap:3px; }
+
+.di-auth-title-small {
+  font-weight:700;
+  font-size:16px;
+  color: rgba(11,18,32,0.95);
+  letter-spacing: -0.2px;
+}
+
+.di-auth-sub-small {
+  font-size:12px;
+  color: rgba(11,18,32,0.6);
+  line-height:1.15;
+  max-width: 380px;
+}
+
+/* responsive: even smaller logo/text on mobile */
+@media (max-width: 900px) {
+  .di-auth-logo { width: 40px; height: 40px; }
+  .di-auth-title-small { font-size:15px; }
+  .di-auth-sub-small { font-size:11px; }
+  .di-auth-header { max-width: 320px; gap: 8px; }
+}
+
+/* optional: slightly reduce spacing between header and title inside the card */
+.di-form-inner > .di-auth-header-wrap { margin-bottom: 6px; }
