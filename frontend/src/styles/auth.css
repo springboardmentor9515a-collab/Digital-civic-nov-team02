@@ -1,0 +1,70 @@
+/* src/styles/auth.css
+   Neutral baseline — tweak colors to match your Figma tokens
+*/
+:root{
+  --bg: #f5f7fb;
+  --card-bg: #ffffff;
+  --primary: #2b6ef6;   /* change to your brand color */
+  --text: #0f1724;
+  --muted: #6b7280;
+  --error: #d9534f;
+  --input-border: #e6e8ef;
+  --radius: 10px;
+}
+
+*{ box-sizing: border-box; font-family: Inter, system-ui, Arial, sans-serif; }
+
+body { margin:0; background:var(--bg); color:var(--text); }
+
+.auth-page{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+
+.auth-card{
+  width:100%;
+  max-width:420px;
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  padding:28px;
+  box-shadow: 0 6px 20px rgba(15,23,36,0.06);
+}
+
+.auth-title{ font-size:20px; margin:0 0 8px; font-weight:600; }
+.auth-sub{ color:var(--muted); font-size:14px; margin-bottom:14px; }
+
+.cv-field{ margin-bottom:14px; display:flex; flex-direction:column; gap:8px; }
+.cv-label{ font-size:13px; color:var(--muted); }
+.cv-input{
+  padding:10px 12px; border-radius:8px; border:1px solid var(--input-border);
+  font-size:14px;
+}
+.cv-input:focus{ outline:none; box-shadow:0 0 0 3px rgba(43,110,246,0.08); border-color:var(--primary); }
+
+.cv-input-error{ border-color:var(--error); }
+.cv-error{ color:var(--error); font-size:13px; margin-top:6px; }
+
+.cv-btn{
+  background:var(--primary);
+  color:white;
+  border:none;
+  padding:10px 12px;
+  border-radius:8px;
+  width:100%;
+  font-weight:600;
+  cursor:pointer;
+}
+.cv-btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+.auth-footer{ margin-top:12px; text-align:center; color:var(--muted); font-size:14px; }
+
+.role-row{ display:flex; gap:10px; align-items:center; }
+.select { padding:10px 12px; border-radius:8px; border:1px solid var(--input-border); width:100%; }
+.small{ font-size:13px; }
+
+@media (max-width:480px){
+  .auth-card{ padding:18px; margin: 10px; }
+}
