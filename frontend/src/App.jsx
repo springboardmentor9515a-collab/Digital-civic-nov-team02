@@ -1,19 +1,50 @@
 // src/App.jsx
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import Admin from './pages/Admin';
+import { AuthProvider } from './context/AuthProvider';
+import PrivateRoute from './components/PrivateRoute';
+import RoleRoute from './components/RoleRoute';
+import GlobalLoader from './components/GlobalLoader';
 
-export default function App(){
+export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
-      {/* add other routes later */}
-    </Routes>
+    <AuthProvider>
+      <GlobalLoader />
+      <Routes>
+        {/* Public landing page */}
+        <Route path="/" element={<Landing />} />
+
+        {/* Auth pages */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        {/* Protected app pages */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <RoleRoute role="official">
+              <Admin />
+            </RoleRoute>
+          }
+        />
+
+        {/* 404 fallback: send unknown routes to home (landing) */}
+        <Route path="*" element={<Landing />} />
+      </Routes>
+    </AuthProvider>
   );
 }

@@ -1,18 +1,40 @@
 // src/pages/Signup.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import IconInput from '../components/IconInput';
 import '../styles/auth.design.css';
 import AuthImage from '../assets/auth-image.png';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthHeader from '../components/AuthHeader';
+import { useAuth } from '../context/AuthProvider';
 
 export default function Signup() {
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const password = watch('password', '');
+  // careful: rename the context register function to avoid collision with useForm.register
+  const { register: registerUser, authLoading, error, user } = useAuth();
+  const navigate = useNavigate();
 
-  function onSubmit(data) {
-    console.log('signup:', data);
+  useEffect(() => {
+    // If already logged in, go to dashboard
+    if (user) navigate('/dashboard', { replace: true });
+  }, [user, navigate]);
+
+  async function onSubmit(data) {
+    // data contains name, email, password, location, role
+    const payload = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      location: data.location,
+      role: data.role
+    };
+
+    const res = await registerUser(payload);
+    if (res.ok) {
+      navigate('/dashboard', { replace: true });
+    }
+    // if not ok, error is surfaced from context
   }
 
   const UserIcon = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" stroke="#222" strokeWidth="1.2"/><path d="M4 20c1.5-4 6-6 8-6s6.5 2 8 6" stroke="#222" strokeWidth="1.2"/></svg>;
@@ -77,8 +99,10 @@ export default function Signup() {
               </select>
             </div>
 
-            <button className="di-cta" type="submit" disabled={isSubmitting}>
-              <span>Create Account</span>
+            {error && <div className="di-field-error" role="alert">{error}</div>}
+
+            <button className="di-cta" type="submit" disabled={authLoading}>
+              <span>{authLoading ? 'Creating...' : 'Create Account'}</span>
             </button>
           </form>
 

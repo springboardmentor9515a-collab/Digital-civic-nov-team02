@@ -1,18 +1,30 @@
 // src/pages/Login.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import IconInput from '../components/IconInput';
 import '../styles/auth.design.css';
 import AuthImage from '../assets/auth-image.png'; // <-- put your image here
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthHeader from '../components/AuthHeader';
+import { useAuth } from '../context/AuthProvider';
 
 export default function Login() {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
+  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { login, authLoading, error, user } = useAuth();
+  const navigate = useNavigate();
 
-  function onSubmit(data) {
-    console.log('login:', data);
-    // TODO: call backend
+  useEffect(() => {
+    // If already logged in, go to dashboard
+    if (user) navigate('/dashboard', { replace: true });
+  }, [user, navigate]);
+
+  async function onSubmit(data) {
+    // call auth context login
+    const res = await login({ email: data.email, password: data.password });
+    if (res.ok) {
+      navigate('/dashboard', { replace: true });
+    }
+    // error (if any) is surfaced via `error` from context
   }
 
   const EmailIcon = <svg width="18" height="12" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 2h20v12H2z" stroke="#222" strokeWidth="1.2" fill="none"/><path d="M2 2l10 7 10-7" stroke="#222" strokeWidth="1.2" fill="none"/></svg>;
@@ -58,8 +70,10 @@ export default function Login() {
               error={errors.password}
             />
 
-            <button className="di-cta" type="submit" disabled={isSubmitting}>
-              <span>Sign In</span>
+            {error && <div className="di-field-error" role="alert">{error}</div>}
+
+            <button className="di-cta" type="submit" disabled={authLoading}>
+              <span>{authLoading ? 'Signing in...' : 'Sign In'}</span>
             </button>
           </form>
 
