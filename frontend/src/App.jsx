@@ -1,20 +1,22 @@
 // src/App.jsx
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Landing from './pages/Landing';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard';
-import Admin from './pages/Admin';
-import { AuthProvider } from './context/AuthProvider';
-import PrivateRoute from './components/PrivateRoute';
-import RoleRoute from './components/RoleRoute';
-import GlobalLoader from './components/GlobalLoader';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import Admin from "./pages/Admin";
+import PetitionDetailPage from "./pages/PetitionDetailPage";
+
+import PrivateRoute from "./components/PrivateRoute";
+import RoleRoute from "./components/RoleRoute";
+import GlobalLoader from "./components/GlobalLoader";
 
 export default function App() {
   return (
-    <AuthProvider>
+    <>
       <GlobalLoader />
+
       <Routes>
         {/* Public landing page */}
         <Route path="/" element={<Landing />} />
@@ -33,6 +35,17 @@ export default function App() {
           }
         />
 
+        {/* Petition detail page */}
+        <Route
+          path="/petitions/:id"
+          element={
+            <PrivateRoute>
+              <PetitionDetailPage />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Officials only */}
         <Route
           path="/admin"
           element={
@@ -42,9 +55,9 @@ export default function App() {
           }
         />
 
-        {/* 404 fallback: send unknown routes to home (landing) */}
+        {/* 404 fallback */}
         <Route path="*" element={<Landing />} />
       </Routes>
-    </AuthProvider>
+    </>
   );
 }

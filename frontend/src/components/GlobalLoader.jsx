@@ -1,16 +1,10 @@
-// src/components/GlobalLoader.jsx
 import React from "react";
-import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "../context/AuthContext";
 import "../styles/globalloader.css";
 
 export default function GlobalLoader() {
-  const { authLoading } = useAuth();
+  const { user } = useAuth();
 
-  if (!authLoading) return null;
-
-  return (
-    <div className="gl-overlay">
-      <div className="gl-spinner"></div>
-    </div>
-  );
+  // You can return null for now (frontend-only)
+  return null;
 }
