@@ -1,0 +1,231 @@
+/* OVERLAY */
+.cp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* MODAL */
+.cp-modal {
+  background: #fff;
+  width: 640px;
+  max-width: 90%;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+/* HEADER */
+.cp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cp-header h2 {
+  margin: 0;
+}
+
+.cp-header p {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.cp-close {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: #111827;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* FORM */
+.cp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cp-form label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.cp-form input,
+.cp-form select,
+.cp-form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.cp-row {
+  display: flex;
+  gap: 14px;
+}
+
+.cp-row label {
+  flex: 1;
+}
+
+/* INFO */
+.cp-info {
+  background: #fef3c7;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  color:#111827;
+}
+
+/* ACTIONS */
+.cp-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.cp-cancel {
+  background: #f3f4f6;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  color:#111827;
+}
+
+.cp-actions button[type="submit"] {
+  background: #111827;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cp-actions button:disabled {
+  opacity: 0.6;
+}
+
+/* ERRORS */
+.cp-error {
+  color: red;
+  font-size: 14px;
+}
+
+.cp-title {
+  color: #111827;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.cp-sub {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* LABELS */
+.cp-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cp-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: -6px;
+}
+
+/* FIX CLOSE BUTTON POSITION & FOCUS */
+.cp-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;        /* ✅ Dark visible color */
+  cursor: pointer;
+  line-height: 1;
+  z-index: 10;           /* ✅ Ensures it stays on top */
+}
+
+/* Remove ugly black focus box */
+.cp-close:focus,
+.cp-close:active {
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.cp-close:hover {
+  color: #4f46e5;        /* subtle hover */
+}
+
+
+/* CATEGORY SELECT FIX */
+.cp-select {
+  appearance: none;
+  background-color: #f9fafb;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23374151' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  border-radius: 10px;
+}
+
+.cp-form select:hover {
+  border-color: #6366f1;
+}
+
+.cp-form select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* FIELD WRAPPER */
+.cp-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cp-modal {
+  position: relative;   /* ✅ REQUIRED */
+  background: #fff;
+  width: 640px;
+  max-width: 90%;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+/* ===============================
+   FORCE LIGHT THEME (OVERRIDE)
+================================ */
+.cp-modal input,
+.cp-modal select,
+.cp-modal textarea {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.cp-modal input::placeholder,
+.cp-modal textarea::placeholder {
+  color: #6b7280;
+}
