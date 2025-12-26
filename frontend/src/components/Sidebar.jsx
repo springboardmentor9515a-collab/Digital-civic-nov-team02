@@ -1,34 +1,94 @@
-// src/components/Sidebar.jsx
-import React from 'react';
-import ProfileCard from './ProfileCard';
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthProvider";
 
-function Item({children, active}) {
-  return <div className={`sb-item ${active ? 'active' : ''}`}>{children}</div>;
-}
+function NavItem({ icon, label, to, active }) {
+  const navigate = useNavigate();
 
-export default function Sidebar(){
   return (
-    <div className="sb-root">
-      {/* <div style={{padding: '18px 20px'}}>
-        <div className="sb-title">Civix</div>
-      </div> */}
-      {/* Profile card moved inside the sidebar */}
-      <div style={{ padding: '0 16px 12px 16px' }}>
-        <ProfileCard />
-      </div>
-
-      <div className="sb-items">
-        <Item>🏠 Dashboard</Item>
-        <Item>📝 Petitions</Item>
-        <Item>📊 Polls</Item>
-        <Item>👥 Officials</Item>
-        <Item>📈 Reports</Item>
-        <Item>⚙️ Settings</Item>
-      </div>
-
-      <div className="sb-footer">
-        <div className="sb-help">❓ Help & Support</div>
-      </div>
+    <div
+      className={`sb-item ${active ? "sb-item-active" : ""}`}
+      onClick={() => navigate(to)}
+    >
+      <span className="sb-icon">{icon}</span>
+      <span className="sb-label">{label}</span>
+      {active && <span className="sb-arrow">›</span>}
     </div>
   );
 }
+
+export default function Sidebar() {
+  const { user } = useAuth(); // ✅ BACKEND DATA
+  const location = useLocation();
+  const path = location.pathname;
+
+  const avatarLetter = user?.name ? user.name.charAt(0).toUpperCase() : "";
+
+  return (
+    <aside className="sb-root">
+      {/* BRAND */}
+      <div className="sb-brand">
+        <div className="sb-brand-icon">🏛️</div>
+        <div className="sb-brand-text">
+          Civix <span className="sb-beta">BETA</span>
+        </div>
+      </div>
+
+      {/* PROFILE */}
+      <div className="pc-root-sidebar">
+        <div className="pc-avatar-sidebar">{avatarLetter}</div>
+
+        <div className="pc-info">
+          <div className="pc-name-sidebar">{user?.name}</div>
+          <div className="pc-role-sidebar">{user?.role}</div>
+          <div className="pc-loc-sidebar">{user?.location}</div>
+          <div className="pc-email-sidebar">{user?.email}</div>
+        </div>
+      </div>
+
+      {/* NAV */}
+      <div className="sb-items">
+        <NavItem
+          to="/dashboard"
+          label="Dashboard"
+          icon="🏠"
+          active={path === "/dashboard"}
+        />
+        <NavItem
+          to="/petitions"
+          label="Petitions"
+          icon="📝"
+          active={path.startsWith("/petitions")}
+        />
+        <NavItem
+          to="/polls"
+          label="Polls"
+          icon="📊"
+          active={path.startsWith("/polls")}
+        />
+        <NavItem
+          to="/officials"
+          label="Officials"
+          icon="👥"
+          active={path.startsWith("/officials")}
+        />
+        <NavItem
+          to="/reports"
+          label="Reports"
+          icon="📈"
+          active={path.startsWith("/reports")}
+        />
+        <NavItem
+          to="/settings"
+          label="Settings"
+          icon="⚙️"
+          active={path.startsWith("/settings")}
+        />
+      </div>
+
+      {/* FOOTER */}
+      <div className="sb-footer">❓ Help & Support</div>
+    </aside>
+  );
+}
+

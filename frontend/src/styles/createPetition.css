@@ -229,3 +229,29 @@
 .cp-modal textarea::placeholder {
   color: #6b7280;
 }
+
+.cp-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 2000;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.cp-suggestion {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color:#111827;
+}
+
+.cp-suggestion:hover {
+  background: #f3f4f6;
+}

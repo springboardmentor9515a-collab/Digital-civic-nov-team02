@@ -1,15 +1,14 @@
-// src/components/StatCard.jsx
-import React from 'react';
+import React from "react";
 
-export default function StatCard({ title, value, subtitle }){
+export default function StatCard({ title, value, subtitle, type }) {
   return (
     <div className="sc-card">
-      <div className="sc-head">
-        <div className="sc-title">{title}</div>
-        <div className="sc-icon">📄</div>
+      <div className={`sc-icon-box ${type}`}>
+        📊
       </div>
 
       <div className="sc-body">
+        <span className="sc-title">{title}</span>
         <div className="sc-value">{value}</div>
         <div className="sc-sub">{subtitle}</div>
       </div>
