@@ -10,6 +10,8 @@ import { AuthProvider } from './context/AuthProvider';
 import PrivateRoute from './components/PrivateRoute';
 import RoleRoute from './components/RoleRoute';
 import GlobalLoader from './components/GlobalLoader';
+import CreatePetition from "./pages/CreatePetition";
+import Petitions from "./pages/Petitions";
 
 export default function App() {
   return (
@@ -39,6 +41,14 @@ export default function App() {
             <RoleRoute role="official">
               <Admin />
             </RoleRoute>
+          }
+        />
+        <Route
+          path="/petitions"
+          element={
+            <PrivateRoute>
+              <Petitions />
+            </PrivateRoute>
           }
         />
 

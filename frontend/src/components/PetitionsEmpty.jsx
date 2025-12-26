@@ -1,13 +1,15 @@
-// src/components/PetitionsEmpty.jsx
-import React from 'react';
+import React from "react";
 
-export default function PetitionsEmpty(){
+export default function PetitionsEmpty() {
   return (
     <div className="pe-empty">
-      <p>No petitions found with the current filters.</p>
-      <div style={{textAlign:'center', marginTop:12}}>
-        <button className="clear-btn">Clear Filters</button>
-      </div>
+      <div className="pe-icon">📄</div>
+      <h4>No petitions found</h4>
+      <p>Try adjusting your filters or create a new petition.</p>
+
+      <button className="pe-btn">
+        Clear Filters
+      </button>
     </div>
   );
 }
