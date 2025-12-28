@@ -1,11 +1,14 @@
-import axios from "axios";
+// src/api/http.js
+import axios from 'axios';
+
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const http = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
+  baseURL,
   headers: {
-    "Content-Type": "application/json"
+    'Content-Type': 'application/json'
   },
-  withCredentials: true
+  withCredentials: true, // IMPORTANT: allow cookies (HttpOnly) to be sent/received
 });
 
 export default http;

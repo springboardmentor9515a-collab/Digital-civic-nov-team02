@@ -1,30 +1,23 @@
-// src/api/auth.js
 import http from "./http";
 
-/*
-  These functions assume:
-  - Backend sets HttpOnly cookie on successful login/register
-  - OR backend returns { token, user }
-*/
-
+// Register user
 export async function registerApi(payload) {
-  // payload: { name, email, password, role, location... }
-  const res = await http.post("/api/auth/register", payload);
+  const res = await http.post("/auth/register", payload);
   return res.data;
 }
 
+// Login user
 export async function loginApi(payload) {
-  // payload: { email, password }
-  const res = await http.post("/api/auth/login", payload);
+  const res = await http.post("/auth/login", payload);
   return res.data;
 }
 
-export async function meApi() {
-  const res = await http.get("/api/auth/me");
-  return res.data;
-}
-
-export async function logoutApi() {
-  const res = await http.post("/api/auth/logout");
+// Get current logged-in user
+export async function meApi(token) {
+  const res = await http.get("/auth/me", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
   return res.data;
 }
