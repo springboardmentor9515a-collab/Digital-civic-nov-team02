@@ -13,6 +13,10 @@ import GlobalLoader from './components/GlobalLoader';
 import CreatePetition from "./pages/CreatePetition";
 import Petitions from "./pages/Petitions";
 
+// ✅ ADDED IMPORTS
+import Polls from "./pages/Polls";
+import PollDetail from "./pages/PollDetail";
+
 export default function App() {
   return (
     <AuthProvider>
@@ -43,6 +47,7 @@ export default function App() {
             </RoleRoute>
           }
         />
+
         <Route
           path="/petitions"
           element={
@@ -52,7 +57,26 @@ export default function App() {
           }
         />
 
-        {/* 404 fallback: send unknown routes to home (landing) */}
+        {/* ✅ ADDED: POLLS ROUTES (MILESTONE 3) */}
+        <Route
+          path="/polls"
+          element={
+            <PrivateRoute>
+              <Polls />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/polls/:id"
+          element={
+            <PrivateRoute>
+              <PollDetail />
+            </PrivateRoute>
+          }
+        />
+
+        {/* 404 fallback */}
         <Route path="*" element={<Landing />} />
       </Routes>
     </AuthProvider>

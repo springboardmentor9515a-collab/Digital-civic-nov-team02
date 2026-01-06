@@ -16,8 +16,15 @@ export async function loginApi(payload) {
 export async function meApi(token) {
   const res = await http.get("/auth/me", {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   });
   return res.data;
+}
+
+// Logout user (frontend-side logout)
+export async function logoutApi() {
+  // If backend logout API exists later, call it here
+  // For now, just resolve successfully
+  return Promise.resolve(true);
 }

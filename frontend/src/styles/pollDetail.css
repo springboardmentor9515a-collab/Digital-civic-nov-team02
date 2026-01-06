@@ -1,0 +1,100 @@
+.pd-root {
+  display: flex;
+  justify-content: center;
+  padding-top: 30px;
+}
+
+.pd-card {
+  background: #ffffff;
+  max-width: 720px;
+  width: 100%;
+  padding: 32px;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+}
+
+.pd-location {
+  display: inline-block;
+  background: #eef2ff;
+  color: #4f46e5;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.pd-question {
+  font-size: 26px;
+  margin: 10px 0 12px;
+  color: #111827;
+}
+
+.pd-desc {
+  color: #4b5563;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.pd-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 26px;
+}
+
+.pd-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  font-weight: 500;
+  background: #f9fafb;
+  transition: all 0.15s ease;
+}
+
+.pd-option:hover {
+  background: #eef2ff;
+  border-color: #4f46e5;
+}
+
+.pd-option input {
+  accent-color: #4f46e5;
+}
+
+.pd-option.selected {
+  background: #eef2ff;
+  border-color: #4f46e5;
+}
+
+.pd-vote-btn {
+  width: 100%;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pd-vote-btn:disabled {
+  background: #c7d2fe;
+  cursor: not-allowed;
+}
+
+.pd-success {
+  margin-top: 18px;
+  color: #15803d;
+  font-weight: 600;
+}
+
+.pd-info {
+  margin-top: 18px;
+  color: #6b7280;
+}
