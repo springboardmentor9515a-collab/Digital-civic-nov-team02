@@ -1,0 +1,68 @@
+.cp-modal {
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+/* custom scrollbar */
+.cp-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cp-modal::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 10px;
+}
+
+.cp-modal::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 10px;
+  border: 2px solid #f3f4f6;
+}
+
+.cp-modal::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+.cp-option-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.cp-remove {
+  background: #fee2e2;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.cp-add {
+  background: #eef2ff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: black;
+}
+
+.cp-suggestions {
+  position: absolute;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.cp-suggestion {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.cp-suggestion:hover {
+  background: #f3f4f6;
+}
