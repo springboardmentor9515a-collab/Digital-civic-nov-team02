@@ -12,6 +12,9 @@ import RoleRoute from './components/RoleRoute';
 import GlobalLoader from './components/GlobalLoader';
 import CreatePetition from "./pages/CreatePetition";
 import Petitions from "./pages/Petitions";
+import Polls from "./pages/Polls";
+import PollDetails from "./pages/PollDetails";
+
 
 export default function App() {
   return (
@@ -51,6 +54,9 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
+        <Route path="/polls" element={<Polls />} />
+        <Route path="/polls/:id" element={<PollDetails />} />
 
         {/* 404 fallback: send unknown routes to home (landing) */}
         <Route path="*" element={<Landing />} />
