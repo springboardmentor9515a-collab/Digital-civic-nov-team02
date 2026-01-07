@@ -1,0 +1,562 @@
+/* ===== Poll Details Page Wrapper ===== */
+
+.poll-details-page {
+  width: 100%;
+}
+
+/* ===== Back Button ===== */
+
+.pd-back {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #4f46e5; /* sidebar blue */
+  cursor: pointer;
+  margin-bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pd-back:hover {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+/* ===== Layout ===== */
+
+.pd-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* ===== Cards ===== */
+
+.pd-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 22px;
+}
+
+/* ===== Left Card ===== */
+
+.pd-badges {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pd-status {
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+
+.pd-official {
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.pd-card h2 {
+  font-size: 20px;
+  margin: 0 0 10px 0;
+  color: #111827;
+}
+
+/* Meta info */
+.pd-meta {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 18px;
+}
+
+/* Officials info box */
+.pd-info {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 14px;
+}
+
+.pd-info strong {
+  display: block;
+  color: #111827;
+}
+
+.pd-info p {
+  margin: 4px 0 0;
+  color: #6b7280;
+}
+
+/* ===== Results Section ===== */
+
+.pd-right h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+/* ===== Chart Toggle ===== */
+
+.pd-toggle {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 18px;
+}
+
+.pd-toggle button {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 8px 0;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #6b7280;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pd-toggle button:hover {
+  color: #4f46e5;
+}
+
+.pd-toggle button.active {
+  background: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== Results Bars ===== */
+
+.pd-result {
+  margin-bottom: 16px;
+}
+
+/* Row: option left, count right */
+.pd-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+/* Progress bar background */
+.pd-bar {
+  width: 100%;
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* Filled bar */
+.pd-bar > div {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* Unique colors per option */
+.pd-result:nth-of-type(1) .pd-bar > div {
+  background: #2563eb; /* blue */
+}
+
+.pd-result:nth-of-type(2) .pd-bar > div {
+  background: #7c3aed; /* purple */
+}
+
+.pd-result:nth-of-type(3) .pd-bar > div {
+  background: #22c55e; /* green */
+}
+
+.pd-result:nth-of-type(4) .pd-bar > div {
+  background: #f59e0b; /* amber (future-safe) */
+}
+
+/* Total votes */
+.pd-total {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 1024px) {
+  .pd-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ===== Bar Chart Container ===== */
+
+.pd-bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* One bar row */
+.pd-bar-row {
+  width: 100%;
+}
+
+/* Label + value row */
+.pd-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+/* Background track */
+.pd-bar-track {
+  width: 100%;
+  height: 14px;              /* ⬅ thicker like reference */
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* Animated fill */
+.pd-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ===== TOP BAR CHART (REFERENCE STYLE) ===== */
+
+.pd-bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 6px;
+}
+
+.pd-bar-row {
+  width: 100%;
+}
+
+.pd-bar-track {
+  width: 100%;
+  height: 18px;              /* thicker like reference */
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pd-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ===== TOP VISUAL BAR CHART (REFERENCE STYLE) ===== */
+
+.pd-visual-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+/* Background bar */
+.pd-visual-track {
+  width: 100%;
+  height: 18px;              /* thick like reference */
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* Animated fill */
+.pd-visual-fill {
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ===== TOP RECTANGLE BAR CHART (REFERENCE STYLE) ===== */
+
+.pd-rect-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 6px;
+}
+
+.pd-rect-track {
+  width: 100%;
+  height: 18px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pd-rect-fill {
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ===== Inline Voting Options (Citizen) ===== */
+
+.pd-inline-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 14px 0 18px;
+}
+
+.pd-inline-option {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #111827;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pd-inline-option.active {
+  font-weight: 600;
+  color: #2563eb;
+}
+
+/* ===== Dark Submit Button ===== */
+
+.pd-submit-dark {
+  background: #111827;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pd-submit-dark:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* ===== Vote Success ===== */
+
+.pd-success {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* ===== Glass Voting Section ===== */
+
+.pd-vote-glass {
+  margin-top: 12px;
+}
+
+/* Title */
+.pd-vote-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+/* Option List */
+.pd-vote-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Option Card */
+.pd-vote-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* Hover animation */
+.pd-vote-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Selected state */
+.pd-vote-option.selected {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.06);
+}
+
+/* Fake radio */
+.pd-radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #9ca3af;
+  position: relative;
+}
+
+.pd-vote-option.selected .pd-radio {
+  border-color: #2563eb;
+}
+
+.pd-vote-option.selected .pd-radio::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2563eb;
+}
+
+/* Option text */
+.pd-option-text {
+  font-size: 14px;
+  color: #111827;
+}
+
+/* ===== Gradient Submit Button ===== */
+
+.pd-submit-gradient {
+  margin-top: 16px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+
+  /* 🔥 DEFAULT (DISABLED-LOOK BASE) */
+  background: linear-gradient(
+    90deg,
+    #93c5fd,
+    #a5b4fc,
+    #c4b5fd
+  );
+
+  transition: 
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+/* 🚀 ENABLED = HIGH INTENSITY */
+.pd-submit-gradient:not(:disabled) {
+  background: linear-gradient(
+    90deg,
+    #3b82f6,   /* stronger blue */
+    #6366f1,   /* indigo */
+    #8b5cf6    /* violet */
+  );
+
+  box-shadow:
+    0 10px 26px rgba(79, 70, 229, 0.45),
+    inset 0 0 0 rgba(255, 255, 255, 0);
+
+  filter: brightness(1.05);
+}
+
+/* Hover only when enabled */
+.pd-submit-gradient:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 32px rgba(79, 70, 229, 0.55);
+}
+
+/* Disabled state */
+.pd-submit-gradient:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: none;
+}
+
+/* ===== Glass Success Message ===== */
+
+.pd-success-glass {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: 14px;
+
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  backdrop-filter: blur(8px);
+
+  color: #166534;
+}
+
+.pd-success-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #ffffff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pd-success-glass strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pd-success-glass p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #166534;
+}

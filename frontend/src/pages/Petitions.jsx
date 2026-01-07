@@ -1,20 +1,42 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import { getPetitionsApi } from "../api/petitions";
+import { getPetitionsApi, deletePetitionApi } from "../api/petitions";
 import CreatePetitionModal from "../pages/CreatePetition";
+import ViewPetitionModal from "../components/ViewPetitionModal";
+import EditPetitionModal from "../components/EditPetitionModal";
+import DeletePetitionModal from "../components/DeletePetitionModal";
 import "../styles/petitions.css";
 
-export default function Petitions() {
-  const navigate = useNavigate();
+/* ✅ SAME helper used in ViewPetitionModal */
+function getTimeAgo(dateString) {
+  if (!dateString) return "Just now";
 
+  const diff = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.floor(diff / 60000);
+
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+
+  const days = Math.floor(hours / 24);
+  return `${days} day${days > 1 ? "s" : ""} ago`;
+}
+
+export default function Petitions() {
   const [petitions, setPetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const [showCreate, setShowCreate] = useState(false);
 
-  // ✅ FIX 1: status must be EMPTY for "Status: All"
+  // ✅ Modal states
+  const [selectedPetition, setSelectedPetition] = useState(null);
+  const [showView, setShowView] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+
   const [filters, setFilters] = useState({
     location: "",
     category: "",
@@ -41,10 +63,21 @@ export default function Petitions() {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   }
 
+  async function handleDeleteConfirm(id) {
+    try {
+      await deletePetitionApi(id);
+      setShowDelete(false);
+      setSelectedPetition(null);
+      fetchPetitions();
+    } catch (err) {
+      alert("Failed to delete petition");
+      console.error(err);
+    }
+  }
+
   return (
     <div className="app-layout">
       <Sidebar />
-
       <div className="app-main">
         <Topbar />
 
@@ -56,10 +89,7 @@ export default function Petitions() {
               <p>Browse, sign, and track petitions in your community.</p>
             </div>
 
-            <button
-              className="pt-create-btn"
-              onClick={() => setShowCreate(true)}
-            >
+            <button className="pt-create-btn" onClick={() => setShowCreate(true)}>
               Create Petition
             </button>
           </div>
@@ -85,8 +115,6 @@ export default function Petitions() {
             <div className="pt-filters">
               <select name="location" onChange={handleChange}>
                 <option value="">All Locations</option>
-                <option value="San Diego, CA">San Diego, CA</option>
-                <option value="New York, NY">New York, NY</option>
               </select>
 
               <select name="category" onChange={handleChange}>
@@ -99,7 +127,7 @@ export default function Petitions() {
                 <option value="Healthcare">Healthcare</option>
                 <option value="Housing">Housing</option>
               </select>
-              
+
               <select name="status" onChange={handleChange}>
                 <option value="">Status: All</option>
                 <option value="active">Active</option>
@@ -117,11 +145,34 @@ export default function Petitions() {
           ) : (
             <div className="pt-grid">
               {petitions.map((p) => (
-                <div
-                  key={p._id}
-                  className="pt-card"
-                  onClick={() => navigate(`/petitions/${p._id}`)}
-                >
+                <div key={p._id} className="pt-card">
+                  {/* ACTION ICONS */}
+                  <div className="pt-card-actions">
+                    <span
+                      className="pt-icon edit"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPetition(p);
+                        setShowEdit(true);
+                      }}
+                      title="Edit"
+                    >
+                      ✏️
+                    </span>
+
+                    <span
+                      className="pt-icon delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPetition(p);
+                        setShowDelete(true);
+                      }}
+                      title="Delete"
+                    >
+                      🗑️
+                    </span>
+                  </div>
+
                   <div className="pt-progress">
                     <span
                       style={{
@@ -133,7 +184,10 @@ export default function Petitions() {
                     />
                   </div>
 
-                  <div className="pt-time">⏱ recently</div>
+                  {/* ✅ FIXED TIME */}
+                  <div className="pt-time">
+                    ⏱ {getTimeAgo(p.createdAt)}
+                  </div>
 
                   <h3>{p.title}</h3>
 
@@ -151,7 +205,15 @@ export default function Petitions() {
                     </span>
                   </div>
 
-                  <span className="pt-link">View Details</span>
+                  <span
+                    className="pt-link"
+                    onClick={() => {
+                      setSelectedPetition(p);
+                      setShowView(true);
+                    }}
+                  >
+                    View Details
+                  </span>
                 </div>
               ))}
             </div>
@@ -159,9 +221,38 @@ export default function Petitions() {
         </main>
       </div>
 
-      {/* MODAL */}
+      {/* CREATE */}
       {showCreate && (
         <CreatePetitionModal onClose={() => setShowCreate(false)} />
+      )}
+
+      {/* VIEW */}
+      {showView && selectedPetition && (
+        <ViewPetitionModal
+          petition={selectedPetition}
+          open={showView}
+          onOpenChange={setShowView}
+        />
+      )}
+
+      {/* EDIT */}
+      {showEdit && selectedPetition && (
+        <EditPetitionModal
+          petition={selectedPetition}
+          open={showEdit}
+          onOpenChange={setShowEdit}
+          onSaved={fetchPetitions}
+        />
+      )}
+
+      {/* DELETE */}
+      {showDelete && selectedPetition && (
+        <DeletePetitionModal
+          petition={selectedPetition}
+          open={showDelete}
+          onClose={() => setShowDelete(false)}
+          onConfirm={handleDeleteConfirm}
+        />
       )}
     </div>
   );

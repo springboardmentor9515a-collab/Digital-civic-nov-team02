@@ -179,3 +179,76 @@
   text-align: center;
   margin-top: 40px;
 }
+
+/* CARD ACTION ICONS */
+.pt-card-actions {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.pt-icon {
+  font-size: 16px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.pt-icon:hover {
+  background: #e5e7eb;
+  transform: scale(1.1);
+}
+
+.pt-icon.delete:hover {
+  background: #fee2e2;
+}
+
+/* CARD */
+.pt-card {
+  background: #fff;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+
+  /* ✅ FIX: anchor absolute-positioned icons */
+  position: relative;
+}
+
+.pt-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.08);
+}
+
+/* CARD ACTION ICONS */
+.pt-card-actions {
+  position: absolute;
+  top: 30px;
+  right: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.pt-icon {
+  font-size: 16px;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.pt-icon:hover {
+  background: #e5e7eb;
+  transform: scale(1.1);
+}
+
+.pt-icon.delete:hover {
+  background: #fee2e2;
+}
+
