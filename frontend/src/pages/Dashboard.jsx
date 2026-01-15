@@ -12,6 +12,9 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
 
+  // ✅ STEP 1: role check
+  const isOfficial = user?.role === "official";
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) return "GOOD MORNING";
@@ -20,7 +23,8 @@ export default function Dashboard() {
     return "GOOD NIGHT";
   };
 
-  const stats = [
+  // ✅ STEP 3: role-based stats
+  const citizenStats = [
     { title: "My Petitions", value: 0, subtitle: "petitions", type: "blue" },
     {
       title: "Successful Petitions",
@@ -29,6 +33,19 @@ export default function Dashboard() {
       type: "green",
     },
     { title: "Polls Created", value: 0, subtitle: "polls", type: "purple" },
+  ];
+
+  const officialStats = [
+    { title: "Total Petitions", value: 0, subtitle: "received", type: "blue" },
+    { title: "Active Petitions", value: 0, subtitle: "open", type: "green" },
+    { title: "Closed Petitions", value: 0, subtitle: "resolved", type: "purple" },
+  ];
+
+  // ✅ STEP 4: temporary petitions list for officials
+  const officialPetitions = [
+    { id: 1, title: "Road repair in Andheri", status: "active" },
+    { id: 2, title: "Street lights issue", status: "under_review" },
+    { id: 3, title: "Water supply problem", status: "closed" },
   ];
 
   return (
@@ -49,17 +66,21 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              <button
-                className="db-primary-btn"
-                onClick={() => setShowCreate(true)}
-              >
-                Create Petition
-              </button>
+              {/* ✅ STEP 2: hide button for officials */}
+              {!isOfficial && (
+                <button
+                  className="db-primary-btn"
+                  onClick={() => setShowCreate(true)}
+                >
+                  Create Petition
+                </button>
+              )}
             </div>
           </div>
 
+          {/* ✅ STEP 3: render stats based on role */}
           <div className="db-stats-row">
-            {stats.map((s, idx) => (
+            {(isOfficial ? officialStats : citizenStats).map((s, idx) => (
               <StatCard key={idx} {...s} />
             ))}
           </div>
@@ -74,7 +95,22 @@ export default function Dashboard() {
             </div>
 
             <FilterChips />
-            <PetitionsEmpty />
+
+            {/* ✅ STEP 4: petitions list only for officials */}
+            {isOfficial ? (
+              <div className="pt-grid">
+                {officialPetitions.map((p) => (
+                  <div key={p.id} className="pt-card">
+                    <h4>{p.title}</h4>
+                    <span className={`pt-status ${p.status}`}>
+                      {p.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <PetitionsEmpty />
+            )}
           </section>
         </main>
       </div>
