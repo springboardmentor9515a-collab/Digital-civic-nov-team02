@@ -5,14 +5,14 @@ import Sidebar from "../components/Sidebar";
 import StatCard from "../components/StatCard";
 import FilterChips from "../components/FilterChips";
 import PetitionsEmpty from "../components/PetitionsEmpty";
-import CreatePetitionModal from "../pages/CreatePetition"; // ✅ FIX
+import CreatePetitionModal from "../pages/CreatePetition";
 import "../styles/dashboard.css";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
 
-  // ✅ STEP 1: role check
+  // ✅ FIXED: correct role check
   const isOfficial = user?.role === "official";
 
   const getGreeting = () => {
@@ -23,7 +23,6 @@ export default function Dashboard() {
     return "GOOD NIGHT";
   };
 
-  // ✅ STEP 3: role-based stats
   const citizenStats = [
     { title: "My Petitions", value: 0, subtitle: "petitions", type: "blue" },
     {
@@ -41,7 +40,6 @@ export default function Dashboard() {
     { title: "Closed Petitions", value: 0, subtitle: "resolved", type: "purple" },
   ];
 
-  // ✅ STEP 4: temporary petitions list for officials
   const officialPetitions = [
     { id: 1, title: "Road repair in Andheri", status: "active" },
     { id: 2, title: "Street lights issue", status: "under_review" },
@@ -66,7 +64,7 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              {/* ✅ STEP 2: hide button for officials */}
+              {/* ✅ Citizen only */}
               {!isOfficial && (
                 <button
                   className="db-primary-btn"
@@ -78,7 +76,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* ✅ STEP 3: render stats based on role */}
           <div className="db-stats-row">
             {(isOfficial ? officialStats : citizenStats).map((s, idx) => (
               <StatCard key={idx} {...s} />
@@ -96,7 +93,7 @@ export default function Dashboard() {
 
             <FilterChips />
 
-            {/* ✅ STEP 4: petitions list only for officials */}
+            {/* ✅ Officials only */}
             {isOfficial ? (
               <div className="pt-grid">
                 {officialPetitions.map((p) => (
@@ -115,7 +112,6 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {/* ✅ MODAL */}
       {showCreate && (
         <CreatePetitionModal onClose={() => setShowCreate(false)} />
       )}

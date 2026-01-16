@@ -4,17 +4,18 @@ import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import { getPetitionsApi } from "../api/petitions";
 import CreatePetitionModal from "../pages/CreatePetition";
+import { useAuth } from "../context/AuthProvider"; // ✅ ADDED
 import "../styles/petitions.css";
 
 export default function Petitions() {
   const navigate = useNavigate();
+  const { user } = useAuth(); // ✅ ADDED
 
   const [petitions, setPetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const [showCreate, setShowCreate] = useState(false);
 
-  // ✅ FIX 1: status must be EMPTY for "Status: All"
   const [filters, setFilters] = useState({
     location: "",
     category: "",
@@ -56,12 +57,15 @@ export default function Petitions() {
               <p>Browse, sign, and track petitions in your community.</p>
             </div>
 
-            <button
-              className="pt-create-btn"
-              onClick={() => setShowCreate(true)}
-            >
-              Create Petition
-            </button>
+            {/* ✅ Citizen only */}
+            {user?.role === "citizen" && (
+              <button
+                className="pt-create-btn"
+                onClick={() => setShowCreate(true)}
+              >
+                Create Petition
+              </button>
+            )}
           </div>
 
           {/* CONTROLS */}
@@ -99,7 +103,7 @@ export default function Petitions() {
                 <option value="Healthcare">Healthcare</option>
                 <option value="Housing">Housing</option>
               </select>
-              
+
               <select name="status" onChange={handleChange}>
                 <option value="">Status: All</option>
                 <option value="active">Active</option>
@@ -159,7 +163,6 @@ export default function Petitions() {
         </main>
       </div>
 
-      {/* MODAL */}
       {showCreate && (
         <CreatePetitionModal onClose={() => setShowCreate(false)} />
       )}

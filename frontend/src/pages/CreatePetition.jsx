@@ -28,6 +28,11 @@ function FlyToLocation({ position }) {
 export default function CreatePetitionModal({ onClose }) {
   const { user } = useAuth();
 
+  // 🔐 ROLE GUARD: only citizens can create petitions
+  if (user?.role !== "citizen") {
+    return null;
+  }
+
   const categories = [
     "Environment",
     "Infrastructure",
@@ -45,7 +50,6 @@ export default function CreatePetitionModal({ onClose }) {
     description: "",
   });
 
-  /* 🌍 Location state */
   const [location, setLocation] = useState({
     lat: null,
     lng: null,
@@ -58,7 +62,6 @@ export default function CreatePetitionModal({ onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  /* 📍 Auto-detect current location */
   useEffect(() => {
     if (!navigator.geolocation) return;
 
@@ -71,7 +74,6 @@ export default function CreatePetitionModal({ onClose }) {
     });
   }, []);
 
-  /* 🔍 Location autocomplete (Nominatim) */
   useEffect(() => {
     if (search.length < 3) {
       setSuggestions([]);
@@ -135,7 +137,6 @@ export default function CreatePetitionModal({ onClose }) {
   return (
     <div className="cp-overlay">
       <div className="cp-modal">
-        {/* HEADER */}
         <div className="cp-header">
           <div>
             <h2 className="cp-title">Create a New Petition</h2>
@@ -148,9 +149,7 @@ export default function CreatePetitionModal({ onClose }) {
           </button>
         </div>
 
-        {/* FORM */}
         <form className="cp-form" onSubmit={handleSubmit}>
-          {/* TITLE */}
           <label className="cp-label">Petition Title</label>
           <input
             name="title"
@@ -159,7 +158,6 @@ export default function CreatePetitionModal({ onClose }) {
             placeholder="Give your petition a clear, specific title"
           />
 
-          {/* CATEGORY */}
           <label className="cp-label">Category</label>
           <select
             name="category"
@@ -174,7 +172,6 @@ export default function CreatePetitionModal({ onClose }) {
             ))}
           </select>
 
-          {/* LOCATION SEARCH */}
           <label className="cp-label">Location</label>
           <div style={{ position: "relative" }}>
             <input
@@ -206,7 +203,6 @@ export default function CreatePetitionModal({ onClose }) {
             )}
           </div>
 
-          {/* MAP */}
           {location.lat && (
             <MapContainer
               key={`${location.lat}-${location.lng}`}
@@ -224,7 +220,6 @@ export default function CreatePetitionModal({ onClose }) {
             </MapContainer>
           )}
 
-          {/* SIGNATURE GOAL */}
           <label className="cp-label">Signature Goal</label>
           <input
             type="number"
@@ -234,7 +229,6 @@ export default function CreatePetitionModal({ onClose }) {
             placeholder="e.g. 100"
           />
 
-          {/* DESCRIPTION */}
           <label className="cp-label">Description</label>
           <textarea
             name="description"
