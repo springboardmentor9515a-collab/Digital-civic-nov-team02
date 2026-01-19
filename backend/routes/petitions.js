@@ -1,171 +1,149 @@
 const express = require("express");
 const router = express.Router();
 const Petition = require("../models/Petition");
+const Signature = require("../models/Signature");
 const auth = require("../middleware/auth");
+const { isOfficial } = require("../middleware/roles");
 
-// ==========================
-// 1. CREATE PETITION (POST)
-// ==========================
+/* ==========================
+   1. CREATE PETITION
+========================== */
 router.post("/", auth, async (req, res) => {
   try {
-    console.log("📥 Creating Petition...");
-    console.log("👤 User ID:", req.user.id);
-
-    // 1. Destructure the data
-    let { title, description, category, location, signatureGoal, goal } = req.body;
-
-    // --- FIX: Handle Location Object vs String ---
-    // If location is an object (from Map), grab the 'label'. If it's just text, keep it.
-    if (typeof location === 'object' && location !== null && location.label) {
-      location = location.label;
+    if (req.user.role !== "citizen") {
+      return res.status(403).json({ message: "Only citizens can create petitions" });
     }
 
-    // --- FIX: Handle Goal Naming Mismatch ---
-    const finalGoal = goal || signatureGoal || 100;
+    let { title, description, category, location, goal } = req.body;
 
-    // 2. Validate
     if (!title || !description || !category || !location) {
-      console.log("❌ Missing Fields");
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // 3. Create the object
-    const newPetition = new Petition({
+    // Handle location object
+    if (typeof location === "object" && location.label) {
+      location = location.label;
+    }
+
+    const petition = await Petition.create({
       title,
       description,
       category,
-      location: location, // Now guaranteed to be a String
-      goal: finalGoal,
+      location,
+      goal: goal || 100,
       creator: req.user.id,
       status: "active",
-      signers: [],
-      signatureCount: 0
     });
 
-    const savedPetition = await newPetition.save();
-    console.log("✅ Saved to DB Successfully!");
-    res.status(201).json(savedPetition);
-
+    res.status(201).json(petition);
   } catch (err) {
-    console.error("🔥 Save Error:", err.message);
-    res.status(500).json({ error: "Server Error: " + err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
-// ==========================
-// 2. GET ALL PETITIONS (GET) - WITH FILTERS
-// ==========================
+/* ==========================
+   2. GET ALL PETITIONS (FILTER)
+========================== */
 router.get("/", async (req, res) => {
   try {
-    // 1. Grab filters from URL (sent by Dashboard)
     const { location, category, status } = req.query;
-    
-    // 2. Build the query object
-    let query = {};
+    const query = {};
 
-    // Filter by Location
-    if (location && location !== "All Locations") {
-      query.location = { $regex: location, $options: "i" }; // "i" = case insensitive
-    }
+    if (location) query.location = { $regex: location, $options: "i" };
+    if (category) query.category = category;
+    if (status) query.status = status;
 
-    // Filter by Category
-    if (category && category !== "All Categories") {
-      query.category = category;
-    }
-
-    // Filter by Status
-    if (status && status !== "Status: All") {
-      query.status = status.toLowerCase();
-    }
-
-    // 3. Find in Database
     const petitions = await Petition.find(query)
-      .populate("creator", "name") // Show creator's name
-      .sort({ createdAt: -1 });    // Newest first
+      .populate("creator", "name role")
+      .sort({ createdAt: -1 });
 
     res.json(petitions);
-
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({ message: err.message });
   }
 });
 
-// ==========================
-// 3. SIGN PETITION (POST)
-// ==========================
+/* ==========================
+   3. GET PETITION BY ID
+========================== */
+router.get("/:id", async (req, res) => {
+  try {
+    const petition = await Petition.findById(req.params.id)
+      .populate("creator", "name role location");
+
+    if (!petition) {
+      return res.status(404).json({ message: "Petition not found" });
+    }
+
+    res.json(petition);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/* ==========================
+   4. SIGN PETITION
+========================== */
 router.post("/:id/sign", auth, async (req, res) => {
   try {
-    const petition = await Petition.findById(req.params.id);
-    
-    // Check if petition exists
-    if (!petition) return res.status(404).json({ msg: "Petition not found" });
-
-    // Check if user already signed
-    if (petition.signers.includes(req.user.id)) {
-      return res.status(400).json({ message: "You already signed this!" });
+    if (req.user.role !== "citizen") {
+      return res.status(403).json({ message: "Only citizens can sign petitions" });
     }
 
-    // Add signature
-    petition.signers.push(req.user.id);
-    petition.signatureCount = petition.signers.length;
-    
-    await petition.save();
-    res.json(petition); // Return updated petition so frontend can show new count
+    const petition = await Petition.findById(req.params.id);
+    if (!petition) {
+      return res.status(404).json({ message: "Petition not found" });
+    }
 
+    if (petition.status !== "active") {
+      return res.status(400).json({ message: "Petition is not active" });
+    }
+
+    await Signature.create({
+      petition: petition._id,
+      user: req.user.id,
+    });
+
+    petition.signatureCount += 1;
+    await petition.save();
+
+    res.json({
+      message: "Petition signed successfully",
+      signatureCount: petition.signatureCount,
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "You already signed this petition" });
+    }
+    res.status(500).json({ message: err.message });
   }
 });
 
-// ==========================
-// 4. EDIT PETITION (PUT)
-// ==========================
-router.put("/:id", auth, async (req, res) => {
+/* ==========================
+   5. UPDATE PETITION STATUS (OFFICIAL)
+========================== */
+router.patch("/:id/status", auth, isOfficial, async (req, res) => {
   try {
-    let petition = await Petition.findById(req.params.id);
-    if (!petition) return res.status(404).json({ msg: "Petition not found" });
+    const { status } = req.body;
 
-    // Only creator can edit
-    if (petition.creator.toString() !== req.user.id) {
-      return res.status(401).json({ msg: "Not authorized" });
+    if (!["active", "under_review", "closed"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
     }
 
-    // Update allowed fields
-    const { title, description, goal } = req.body;
-    if (title) petition.title = title;
-    if (description) petition.description = description;
-    if (goal) petition.goal = goal;
-
-    await petition.save();
-    res.json(petition);
-    
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-});
-
-// ==========================
-// 5. DELETE PETITION (DELETE)
-// ==========================
-router.delete("/:id", auth, async (req, res) => {
-  try {
     const petition = await Petition.findById(req.params.id);
-    if (!petition) return res.status(404).json({ msg: "Petition not found" });
-
-    // Only creator can delete
-    if (petition.creator.toString() !== req.user.id) {
-      return res.status(401).json({ msg: "Not authorized" });
+    if (!petition) {
+      return res.status(404).json({ message: "Petition not found" });
     }
 
-    await petition.deleteOne();
-    res.json({ msg: "Petition removed" });
-    
+    petition.status = status;
+    await petition.save();
+
+    res.json({
+      message: "Status updated successfully",
+      petition,
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({ message: err.message });
   }
 });
 

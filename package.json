@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7"
   }
 }
