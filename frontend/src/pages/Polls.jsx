@@ -25,40 +25,40 @@ export default function Polls() {
   /* =======================
      FETCH POLLS FROM BACKEND
      ======================= */
+  const fetchPolls = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetch("/api/polls");
+      if (!res.ok) throw new Error("Failed to fetch polls");
+
+      const data = await res.json();
+
+      const normalized = data.map((p) => ({
+        id: p._id,
+        question: p.title,
+        location: p.targetLocation,
+        status: p.status,
+        createdAt: p.createdAt,
+        votes: p.options
+          ? p.options.reduce((sum, o) => sum + o.votes, 0)
+          : 0,
+      }));
+
+      setPolls(normalized);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to load polls");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* =======================
+     INITIAL LOAD
+     ======================= */
   useEffect(() => {
-    const fetchPolls = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // 🔗 BACKEND API (adjust base URL if needed)
-        const res = await fetch("/api/polls");
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch polls");
-        }
-
-        const data = await res.json();
-
-        // 🔧 Map backend fields → frontend expectations
-        const normalized = data.map((p) => ({
-          id: p.id,
-          question: p.question,
-          location: p.location,
-          status: p.status,               // "active" | "closed"
-          createdAt: p.createdAt,
-          votes: p.totalVotes ?? p.votes ?? 0, // safe fallback
-        }));
-
-        setPolls(normalized);
-      } catch (err) {
-        console.error(err);
-        setError("Unable to load polls");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPolls();
   }, []);
 
@@ -215,7 +215,12 @@ export default function Polls() {
 
       {/* CREATE POLL MODAL */}
       {showCreatePoll && (
-        <CreatePollModal onClose={() => setShowCreatePoll(false)} />
+        <CreatePollModal
+          onClose={() => {
+            setShowCreatePoll(false);
+            fetchPolls(); // ✅ refresh list after creation
+          }}
+        />
       )}
     </div>
   );
