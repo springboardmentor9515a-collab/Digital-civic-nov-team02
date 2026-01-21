@@ -1,97 +1,79 @@
-const mongoose = require("mongoose");
-const Poll = require("../models/Poll");
+const Poll = require('../models/Poll');
+const Vote = require('../models/Vote');
 
-/* =========================
-   CREATE POLL
-========================= */
+// 1. Create a Poll
 exports.createPoll = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { title, options, targetLocation } = req.body;
-
-    if (!title || !Array.isArray(options) || options.length < 2 || !targetLocation) {
-      return res.status(400).json({ message: "Invalid poll data" });
+    const { title, options, targetLocation, description } = req.body;
+    if (!options || options.length < 2) {
+      return res.status(400).json({ message: "A poll must have at least 2 options." });
     }
 
     const poll = await Poll.create({
       title,
-      options: options.map(text => ({ text, votes: 0 })),
+      description,
+      options: options.map(opt => ({ text: opt })),
       targetLocation,
-      createdBy: userId,
-      voters: [],
+      createdBy: req.user.id
     });
-
     res.status(201).json(poll);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
-/* =========================
-   GET POLLS
-========================= */
+// 2. Get All Polls
 exports.getPolls = async (req, res) => {
   try {
-    const polls = await Poll.find({
-      targetLocation: req.user.location,
-      status: "active",
-    }).sort({ createdAt: -1 });
+    const { location } = req.query;
+    const filter = location ? { targetLocation: location } : {};
+    
+    const polls = await Poll.find(filter)
+      .populate('createdBy', 'name')
+      .sort({ createdAt: -1 });
 
-    res.json(polls);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(200).json(polls); 
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
-/* =========================
-   GET POLL BY ID
-========================= */
+// 3. Get Single Poll (THE MISSING FUNCTION)
 exports.getPollById = async (req, res) => {
   try {
-    const poll = await Poll.findById(req.params.id).populate("createdBy", "name");
-
+    const poll = await Poll.findById(req.params.id).populate('createdBy', 'name');
     if (!poll) return res.status(404).json({ message: "Poll not found" });
 
-    res.json({
-      id: poll._id,
-      question: poll.title,
-      location: poll.targetLocation,
-      createdBy: poll.createdBy.name,
-      status: poll.status,
-      createdAt: poll.createdAt,
-      options: poll.options.map((o, index) => ({
-        id: index,
-        text: o.text,
-        votes: o.votes,
-      })),
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(200).json(poll);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
-/* =========================
-   VOTE ON POLL
-========================= */
+// 4. Vote on Poll
 exports.voteOnPoll = async (req, res) => {
   try {
     const { optionIndex } = req.body;
+    const pollId = req.params.id;
     const userId = req.user.id;
 
-    const poll = await Poll.findById(req.params.id);
+    const poll = await Poll.findById(pollId);
     if (!poll) return res.status(404).json({ message: "Poll not found" });
 
-    if (poll.voters.includes(userId)) {
-      return res.status(400).json({ message: "Already voted" });
+    const existingVote = await Vote.findOne({ poll: pollId, user: userId });
+    if (existingVote) {
+      return res.status(400).json({ message: "You have already voted on this poll" });
     }
 
+    await Vote.create({ poll: pollId, user: userId });
     poll.options[optionIndex].votes += 1;
-    poll.voters.push(userId);
-
     await poll.save();
 
-    res.json({ message: "Vote recorded" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(200).json(poll);
+  } catch (error) {
+    if (error.code === 11000) {
+        return res.status(400).json({ message: "You have already voted on this poll" });
+    }
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };

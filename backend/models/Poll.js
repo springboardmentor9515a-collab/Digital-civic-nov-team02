@@ -7,32 +7,22 @@ const pollSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
     options: [
       {
         text: { type: String, required: true },
-        votes: { type: Number, default: 0 }
+        votes: { type: Number, default: 0 } 
       }
     ],
-
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
     targetLocation: {
       type: String,
       required: true,
     },
-
-    voters: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
+    // We removed 'voters' array to use the safe 'Vote' model instead
     status: {
       type: String,
       enum: ["active", "closed"],
