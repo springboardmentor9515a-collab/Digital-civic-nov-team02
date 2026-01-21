@@ -18,11 +18,17 @@ function NavItem({ icon, label, to, active }) {
 }
 
 export default function Sidebar() {
-  const { user } = useAuth(); // ✅ BACKEND DATA
+  const { user } = useAuth();
   const location = useLocation();
   const path = location.pathname;
 
-  const avatarLetter = user?.name ? user.name.charAt(0).toUpperCase() : "";
+  const avatarLetter = user?.name
+    ? user.name.charAt(0).toUpperCase()
+    : "";
+
+  // ✅ ROLE-BASED LABEL
+  const governanceLabel =
+    user?.role === "official" ? "Governance" : "Officials";
 
   return (
     <aside className="sb-root">
@@ -54,30 +60,36 @@ export default function Sidebar() {
           icon="🏠"
           active={path === "/dashboard"}
         />
+
         <NavItem
           to="/petitions"
           label="Petitions"
           icon="📝"
           active={path.startsWith("/petitions")}
         />
+
         <NavItem
           to="/polls"
           label="Polls"
           icon="📊"
           active={path.startsWith("/polls")}
         />
+
+        {/* ✅ GOVERNANCE / OFFICIALS (ROLE-BASED) */}
         <NavItem
-          to="/officials"
-          label="Officials"
-          icon="👥"
-          active={path.startsWith("/officials")}
+          to="/governance"
+          label={governanceLabel}
+          icon="🛡️"
+          active={path.startsWith("/governance")}
         />
+
         <NavItem
           to="/reports"
           label="Reports"
           icon="📈"
           active={path.startsWith("/reports")}
         />
+
         <NavItem
           to="/settings"
           label="Settings"
@@ -91,4 +103,3 @@ export default function Sidebar() {
     </aside>
   );
 }
-
