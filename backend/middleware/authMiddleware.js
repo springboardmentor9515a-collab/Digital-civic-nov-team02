@@ -1,23 +1,52 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-module.exports = function(req, res, next) {
-  // 1. Get token from header
-  const token = req.header('Authorization');
+// 1. Protect Middleware (Checks if user is logged in)
+exports.protect = async (req, res, next) => {
+  let token;
 
-  // 2. Check if no token
-  if (!token) {
-    return res.status(401).json({ message: 'No token, authorization denied' });
+  // Check for token in cookies
+  if (req.cookies.token) {
+    token = req.cookies.token;
+  } 
+  // Check for token in Authorization header (Bearer token)
+  else if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
   }
 
-  // 3. Verify token
+  // If no token found
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "Not authorized to access this route",
+    });
+  }
+
   try {
-    // Remove "Bearer " if it's sent in the header (optional, depends on frontend)
-    const cleanToken = token.replace('Bearer ', '');
-    
-    const decoded = jwt.verify(cleanToken, process.env.JWT_SECRET);
-    req.user = decoded; // Adds user data (id, role) to the request
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id);
     next();
   } catch (err) {
-    res.status(401).json({ message: 'Token is not valid' });
+    return res.status(401).json({
+      success: false,
+      message: "Not authorized to access this route",
+    });
   }
+};
+
+// 2. Authorize Middleware (Checks user role, e.g., 'official')
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `User role ${req.user.role} is not authorized to access this route`,
+      });
+    }
+    next();
+  };
 };

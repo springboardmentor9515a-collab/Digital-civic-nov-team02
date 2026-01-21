@@ -1,13 +1,19 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
+// Import the new getPollById function
+const { createPoll, getPolls, getPollById, voteOnPoll } = require('../controllers/pollController');
+const { protect, authorize } = require('../middleware/authMiddleware');
 
-const auth = require("../middleware/auth");
-const { isCitizen, isOfficial } = require("../middleware/roles");
-const pollController = require("../controllers/pollController");
+// 1. Get all polls
+router.get('/', protect, getPolls);
 
-router.post("/", auth, isOfficial, pollController.createPoll);
-router.get("/", auth, pollController.getPolls);
-router.get("/:id", auth, pollController.getPollById);
-router.post("/:id/vote", auth, isCitizen, pollController.voteOnPoll);
+// 2. Get Single Poll (✅ NEW ROUTE - Fixes "Unable to load details")
+router.get('/:id', protect, getPollById);
+
+// 3. Create a poll (Officials/Admins Only)
+router.post('/', protect, authorize('official', 'admin'), createPoll);
+
+// 4. Vote on a poll
+router.put('/:id/vote', protect, voteOnPoll);
 
 module.exports = router;

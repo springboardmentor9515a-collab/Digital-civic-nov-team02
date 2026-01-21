@@ -21,6 +21,22 @@ const PetitionSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
+    // 👇 MILESTONE 4 ADDITIONS (Required for Official Responses) 👇
+    officialResponse: {
+      type: String,
+      default: null, // Stores the text of the official's reply
+    },
+    respondedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null, // Links to the Official who replied
+    },
+    respondedAt: {
+      type: Date,
+      default: null, // Timestamp of the response
+    },
+    // 👆 END MILESTONE 4 ADDITIONS 👆
   },
   { timestamps: true }
 );
