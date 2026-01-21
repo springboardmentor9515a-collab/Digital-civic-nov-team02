@@ -14,6 +14,9 @@ import CreatePetition from "./pages/CreatePetition";
 import Petitions from "./pages/Petitions";
 import Polls from "./pages/Polls";
 import PollDetails from "./pages/PollDetails";
+import Governance from "./pages/Governance";
+import GovernancePetition from "./pages/GovernancePetition";
+import Reports from "./pages/Reports"
 
 
 export default function App() {
@@ -57,6 +60,9 @@ export default function App() {
 
         <Route path="/polls" element={<Polls />} />
         <Route path="/polls/:id" element={<PollDetails />} />
+        <Route path="/governance" element={<Governance />} />
+        <Route path="/governance/:id" element={<GovernancePetition />} />
+        <Route path="/reports" element={<Reports />} />
 
         {/* 404 fallback: send unknown routes to home (landing) */}
         <Route path="*" element={<Landing />} />
