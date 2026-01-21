@@ -17,7 +17,7 @@ export default function PollDetails() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [error, setError] = useState(null);
 
-  /* 🔐 Unique key (fallback only) */
+  // fallback local key
   const voteKey = `poll_${id}_voted_${user?.id || "guest"}`;
 
   /* =======================
@@ -29,18 +29,17 @@ export default function PollDetails() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`/api/polls/${id}`);
-        if (!res.ok) throw new Error("Failed to load poll");
+        const res = await fetch(`/api/polls/${id}`, {
+          credentials: "include", // ✅ REQUIRED
+        });
+
+        if (!res.ok) throw new Error();
 
         const data = await res.json();
-
         setPoll(data);
 
-        // ✅ Prefer backend truth
-        if (data.hasVoted === true) {
-          setHasVoted(true);
-        } else if (localStorage.getItem(voteKey)) {
-          // 🔁 fallback for now
+        // fallback only
+        if (localStorage.getItem(voteKey)) {
           setHasVoted(true);
         }
       } catch (err) {
@@ -58,7 +57,7 @@ export default function PollDetails() {
      HANDLE VOTE
      ======================= */
   const handleVote = async () => {
-    if (!selectedOption) return;
+    if (selectedOption === null) return;
 
     try {
       const res = await fetch(`/api/polls/${id}/vote`, {
@@ -66,18 +65,15 @@ export default function PollDetails() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // ✅ REQUIRED
         body: JSON.stringify({
-          optionId: selectedOption,
+          optionIndex: selectedOption,
         }),
       });
 
-      if (!res.ok) {
-        throw new Error("Vote failed");
-      }
+      if (!res.ok) throw new Error();
 
-      // 🔒 Persist locally (temporary safety)
       localStorage.setItem(voteKey, selectedOption);
-
       setHasVoted(true);
     } catch (err) {
       console.error(err);
@@ -85,6 +81,9 @@ export default function PollDetails() {
     }
   };
 
+  /* =======================
+     UI STATES
+     ======================= */
   if (loading) {
     return (
       <div className="app-layout">
@@ -115,6 +114,9 @@ export default function PollDetails() {
     );
   }
 
+  /* =======================
+     MAIN RENDER
+     ======================= */
   return (
     <div className="app-layout">
       <Sidebar />
@@ -144,7 +146,9 @@ export default function PollDetails() {
                   <div className="pd-meta">
                     <span>📍 {poll.location}</span>
                     <span>👤 {poll.createdBy}</span>
-                    <span>📅 {poll.createdAt}</span>
+                    <span>
+                      📅 {new Date(poll.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
 
                   {/* OFFICIAL VIEW */}
@@ -172,14 +176,16 @@ export default function PollDetails() {
                               onClick={() => setSelectedOption(o.id)}
                             >
                               <span className="pd-radio" />
-                              <span className="pd-option-text">{o.text}</span>
+                              <span className="pd-option-text">
+                                {o.text}
+                              </span>
                             </div>
                           ))}
                         </div>
 
                         <button
                           className="pd-submit-gradient"
-                          disabled={!selectedOption}
+                          disabled={selectedOption === null}
                           onClick={handleVote}
                         >
                           Submit Vote
@@ -187,7 +193,7 @@ export default function PollDetails() {
                       </div>
                     )}
 
-                  {/* SUCCESS MESSAGE */}
+                  {/* SUCCESS */}
                   {hasVoted && (
                     <div className="pd-success-glass">
                       <div className="pd-success-icon">✓</div>

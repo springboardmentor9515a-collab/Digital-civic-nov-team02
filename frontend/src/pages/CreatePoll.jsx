@@ -6,11 +6,10 @@ export default function CreatePollModal({ onClose }) {
   const { user } = useAuth();
 
   const [question, setQuestion] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(""); // optional
   const [options, setOptions] = useState(["", ""]);
   const [closeDate, setCloseDate] = useState("");
 
-  // Location search
   const [location, setLocation] = useState("");
   const [suggestions, setSuggestions] = useState([]);
 
@@ -44,36 +43,38 @@ export default function CreatePollModal({ onClose }) {
   /* =======================
      OPTIONS HELPERS
      ======================= */
-  function addOption() {
+  const addOption = () => {
     if (options.length < 10) setOptions([...options, ""]);
-  }
+  };
 
-  function removeOption(i) {
+  const removeOption = (i) => {
     if (options.length > 2) {
       setOptions(options.filter((_, idx) => idx !== i));
     }
-  }
+  };
 
-  function updateOption(i, val) {
+  const updateOption = (i, val) => {
     const copy = [...options];
     copy[i] = val;
     setOptions(copy);
-  }
+  };
 
-  function getMaxDate() {
+  const getMaxDate = () => {
     const d = new Date();
     d.setDate(d.getDate() + 30);
     return d.toISOString().split("T")[0];
-  }
+  };
 
   /* =======================
-     SUBMIT POLL
+     SUBMIT POLL (CORRECTED)
      ======================= */
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
-    if (!question || options.some(o => !o) || !location || !closeDate) {
+    const cleanedOptions = options.map(o => o.trim()).filter(Boolean);
+
+    if (!question.trim() || cleanedOptions.length < 2 || !location || !closeDate) {
       setError("Please fill all required fields.");
       return;
     }
@@ -86,24 +87,32 @@ export default function CreatePollModal({ onClose }) {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // JWT cookie
         body: JSON.stringify({
-          question,
-          description,
-          options,
-          location,
-          closeDate,
+          title: question.trim(),
+          options: cleanedOptions,
+          targetLocation: location,
+          closeDate,        // ✅ NOW SENT
+          description,      // ✅ optional but consistent
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create poll");
+        const data = await res.json();
+        throw new Error(data.message || "Failed to create poll");
       }
 
-      // Optional: const data = await res.json();
-      onClose(); // ✅ close only on success
+      // ✅ reset form (important)
+      setQuestion("");
+      setDescription("");
+      setOptions(["", ""]);
+      setLocation("");
+      setCloseDate("");
+
+      onClose();
     } catch (err) {
       console.error(err);
-      setError("Unable to create poll. Please try again.");
+      setError(err.message || "Unable to create poll. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -197,10 +206,6 @@ export default function CreatePollModal({ onClose }) {
             onChange={(e) => setCloseDate(e.target.value)}
             className="cp-date"
           />
-
-          <div className="cp-info">
-            ⚠️ Polls should gather genuine community feedback.
-          </div>
 
           {error && <p className="cp-error">{error}</p>}
 

@@ -4,7 +4,11 @@ import http from "./http";
  * Create a new poll (Official only)
  */
 export const createPoll = (data) => {
-  return http.post("/polls", data);
+  return http.post("/polls", {
+    title: data.question,
+    options: data.options,
+    targetLocation: data.location,
+  });
 };
 
 /**
@@ -26,4 +30,4 @@ export const getPollById = (id) => {
  */
 export const votePoll = (id, selectedOption) => {
   return http.post(`/polls/${id}/vote`, { selectedOption });
-}; 
+};
