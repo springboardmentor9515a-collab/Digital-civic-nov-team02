@@ -18,7 +18,7 @@ const CATEGORIES = [
 ];
 
 export default function Governance() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [petitions, setPetitions] = useState([]);
@@ -29,40 +29,58 @@ export default function Governance() {
 
   const isOfficial = user?.role === "official";
 
-  /* 🔁 FETCH PETITIONS (BACKEND READY) */
+  // ✅ Role protection (Milestone-4)
   useEffect(() => {
-    fetchPetitions();
-  }, []);
+    if (!authLoading && user && !isOfficial) {
+      navigate("/dashboard");
+    }
+  }, [authLoading, user, isOfficial, navigate]);
+
+  /* 🔁 FETCH PETITIONS (Milestone-4 API) */
+  useEffect(() => {
+    if (!authLoading && isOfficial) {
+      fetchPetitions();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isOfficial, statusFilter]);
 
   const fetchPetitions = async () => {
     try {
       setLoading(true);
       setError("");
 
-      // 🔁 Replace URL when backend is ready
-      const response = await fetch("/api/petitions");
+      const qs =
+        statusFilter !== "all" ? `?status=${encodeURIComponent(statusFilter)}` : "";
+
+      // ✅ Milestone-4 governance endpoint (official location filtered)
+      const response = await fetch(`/api/governance/petitions${qs}`, {
+        credentials: "include",
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch petitions");
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to fetch petitions");
       }
 
-      const data = await response.json();
-      setPetitions(data || []);
+      const payload = await response.json();
+
+      // Your backend returns { success, count, data }
+      const list = payload?.data || [];
+      setPetitions(Array.isArray(list) ? list : []);
     } catch (err) {
-      setError("Unable to load petitions");
+      setError(err?.message || "Unable to load petitions");
+      setPetitions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  /* FILTERED DATA */
+  /* FILTERED DATA (Category filter frontend-only is OK) */
   const filtered = petitions.filter(
-    (p) =>
-      (statusFilter === "all" || p.status === statusFilter) &&
-      (categoryFilter === "all" || p.category === categoryFilter)
+    (p) => categoryFilter === "all" || p.category === categoryFilter
   );
 
-  /* COUNTS (DERIVED DYNAMICALLY) */
+  /* COUNTS (DERIVED) */
   const counts = {
     total: petitions.length,
     active: petitions.filter((p) => p.status === "active").length,
@@ -75,6 +93,11 @@ export default function Governance() {
     return new Date(date).toLocaleDateString();
   };
 
+  // Auth loading safety
+  if (authLoading) return <div style={{ padding: 20 }}>Loading...</div>;
+  if (!user) return <div style={{ padding: 20 }}>Please login again</div>;
+  if (!isOfficial) return null;
+
   return (
     <div className="app-layout">
       <Sidebar />
@@ -84,13 +107,9 @@ export default function Governance() {
 
         <main className="app-content">
           <div className="gov-header">
-            {isOfficial && <span className="gov-badge">OFFICIALS ONLY</span>}
+            <span className="gov-badge">OFFICIALS ONLY</span>
             <h2>Governance Dashboard</h2>
-            <p>
-              {isOfficial
-                ? "Manage and respond to petitions in your jurisdiction."
-                : "View petitions and official responses."}
-            </p>
+            <p>Manage and respond to petitions in your jurisdiction.</p>
           </div>
 
           {/* SUMMARY CARDS */}
@@ -169,7 +188,11 @@ export default function Governance() {
                 <div key={p._id} className="gov-row">
                   <div>
                     <strong>{p.title}</strong>
-                    <p>{p.description}</p>
+                    <p>
+                      {p.description?.length > 90
+                        ? p.description.slice(0, 90) + "..."
+                        : p.description}
+                    </p>
                   </div>
 
                   <span>{p.category}</span>
@@ -188,14 +211,12 @@ export default function Governance() {
                     className="gov-action-btn"
                     onClick={() => navigate(`/governance/${p._id}`)}
                   >
-                    {isOfficial ? "View & Respond" : "View"}
+                    View & Respond
                   </button>
                 </div>
               ))}
 
-            {!loading && !error && filtered.length === 0 && (
-              <p>No petitions found</p>
-            )}
+            {!loading && !error && filtered.length === 0 && <p>No petitions found</p>}
           </div>
         </main>
       </div>

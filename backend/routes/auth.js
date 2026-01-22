@@ -2,74 +2,65 @@ const router = require("express").Router();
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const auth = require("../middleware/auth");
 
-/* =========================
-   REGISTER API
-========================= */
+const ALLOWED_ROLES = ["citizen", "official"];
+
+const signToken = (user) =>
+  jwt.sign(
+    { id: user._id, role: user.role, location: user.location },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || "1h" }
+  );
+
+/* ======================
+   REGISTER
+====================== */
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role, location } = req.body;
 
-    // Validation
     if (!name || !email || !password || !role || !location) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check existing user
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    if (!ALLOWED_ROLES.includes(role)) {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+
+    const exists = await User.findOne({ email });
+    if (exists) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // Verification logic
-    let isVerified = false;
-    if (role === "citizen") {
-      isVerified = true;
-    }
-
-    // Create user
-    const newUser = new User({
+    const user = await User.create({
       name,
       email,
       passwordHash,
       role,
       location,
-      isVerified,
     });
 
-    const savedUser = await newUser.save();
+    const token = signToken(user);
 
-    // 🔐 Create JWT
-    const token = jwt.sign(
-      {
-        id: savedUser._id,
-        role: savedUser.role,
-        location: savedUser.location,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    // 🍪 SET COOKIE (AUTO LOGIN)
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false, // localhost
+      secure: false,
     });
 
     res.status(201).json({
       message: "User registered successfully",
       user: {
-        id: savedUser._id,
-        name: savedUser.name,
-        email: savedUser.email,
-        role: savedUser.role,
-        location: savedUser.location,
-        isVerified: savedUser.isVerified,
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        location: user.location,
+        isVerified: user.isVerified,
       },
     });
   } catch (err) {
@@ -77,44 +68,27 @@ router.post("/register", async (req, res) => {
   }
 });
 
-/* =========================
-   LOGIN API
-========================= */
+/* ======================
+   LOGIN
+====================== */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "User does not exist" });
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    const token = signToken(user);
 
-    // Create JWT
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-        location: user.location,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    // 🍪 SET COOKIE (THIS FIXES YOUR ISSUE)
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false, // MUST be false on localhost
+      secure: false,
     });
 
-    res.status(200).json({
+    res.json({
       message: "Login successful",
       user: {
         id: user._id,
@@ -130,12 +104,20 @@ router.post("/login", async (req, res) => {
   }
 });
 
-/* =========================
-   LOGOUT API (OPTIONAL)
-========================= */
+/* ======================
+   SESSION (Milestone-1 REQUIRED)
+====================== */
+router.get("/me", auth, async (req, res) => {
+  const user = await User.findById(req.user.id).select("-passwordHash");
+  res.json({ user });
+});
+
+/* ======================
+   LOGOUT
+====================== */
 router.post("/logout", (req, res) => {
   res.clearCookie("token");
-  res.status(200).json({ message: "Logged out successfully" });
+  res.json({ message: "Logged out successfully" });
 });
 
 module.exports = router;

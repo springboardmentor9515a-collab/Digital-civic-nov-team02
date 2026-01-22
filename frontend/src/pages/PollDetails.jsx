@@ -17,73 +17,62 @@ export default function PollDetails() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [error, setError] = useState(null);
 
-  // fallback local key
-  const voteKey = `poll_${id}_voted_${user?.id || "guest"}`;
+  const fetchPoll = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  /* =======================
-     FETCH POLL DETAILS
-     ======================= */
-  useEffect(() => {
-    const fetchPoll = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+      const res = await fetch(`/api/polls/${id}`, {
+        credentials: "include",
+      });
 
-        const res = await fetch(`/api/polls/${id}`, {
-          credentials: "include", // ✅ REQUIRED
-        });
-
-        if (!res.ok) throw new Error();
-
-        const data = await res.json();
-        setPoll(data);
-
-        // fallback only
-        if (localStorage.getItem(voteKey)) {
-          setHasVoted(true);
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Unable to load poll details");
-      } finally {
-        setLoading(false);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to load poll details");
       }
-    };
 
+      const data = await res.json();
+      setPoll(data);
+
+      // ✅ backend-based vote check (ObjectId vs string safe compare)
+      const voters = Array.isArray(data.voters) ? data.voters : [];
+      const voted = voters.some((v) => String(v) === String(user?.id));
+      setHasVoted(voted);
+    } catch (err) {
+      setError(err.message || "Unable to load poll details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPoll();
-  }, [id, voteKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, user?.id]);
 
-  /* =======================
-     HANDLE VOTE
-     ======================= */
   const handleVote = async () => {
     if (selectedOption === null) return;
 
     try {
       const res = await fetch(`/api/polls/${id}/vote`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // ✅ REQUIRED
-        body: JSON.stringify({
-          optionIndex: selectedOption,
-        }),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ optionIndex: selectedOption }),
       });
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Vote failed");
+      }
 
-      localStorage.setItem(voteKey, selectedOption);
       setHasVoted(true);
+      await fetchPoll(); // ✅ refresh results
     } catch (err) {
-      console.error(err);
-      alert("Unable to submit vote. Please try again.");
+      alert(err.message || "Unable to submit vote. Please try again.");
     }
   };
 
-  /* =======================
-     UI STATES
-     ======================= */
   if (loading) {
     return (
       <div className="app-layout">
@@ -114,13 +103,9 @@ export default function PollDetails() {
     );
   }
 
-  /* =======================
-     MAIN RENDER
-     ======================= */
   return (
     <div className="app-layout">
       <Sidebar />
-
       <div className="app-main">
         <Topbar />
 
@@ -131,7 +116,6 @@ export default function PollDetails() {
             </button>
 
             <div className="pd-layout">
-              {/* LEFT */}
               <div className="pd-left">
                 <div className="pd-card">
                   <div className="pd-badges">
@@ -146,12 +130,9 @@ export default function PollDetails() {
                   <div className="pd-meta">
                     <span>📍 {poll.location}</span>
                     <span>👤 {poll.createdBy}</span>
-                    <span>
-                      📅 {new Date(poll.createdAt).toLocaleDateString()}
-                    </span>
+                    <span>📅 {new Date(poll.createdAt).toLocaleDateString()}</span>
                   </div>
 
-                  {/* OFFICIAL VIEW */}
                   {user?.role === "official" && (
                     <div className="pd-info">
                       <strong>Officials cannot vote</strong>
@@ -159,41 +140,35 @@ export default function PollDetails() {
                     </div>
                   )}
 
-                  {/* CITIZEN VOTING */}
-                  {user?.role === "citizen" &&
-                    !hasVoted &&
-                    poll.status === "active" && (
-                      <div className="pd-vote-glass">
-                        <p className="pd-vote-title">Select your choice:</p>
+                  {user?.role === "citizen" && !hasVoted && poll.status === "active" && (
+                    <div className="pd-vote-glass">
+                      <p className="pd-vote-title">Select your choice:</p>
 
-                        <div className="pd-vote-options">
-                          {poll.options.map((o) => (
-                            <div
-                              key={o.id}
-                              className={`pd-vote-option ${
-                                selectedOption === o.id ? "selected" : ""
-                              }`}
-                              onClick={() => setSelectedOption(o.id)}
-                            >
-                              <span className="pd-radio" />
-                              <span className="pd-option-text">
-                                {o.text}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <button
-                          className="pd-submit-gradient"
-                          disabled={selectedOption === null}
-                          onClick={handleVote}
-                        >
-                          Submit Vote
-                        </button>
+                      <div className="pd-vote-options">
+                        {poll.options.map((o) => (
+                          <div
+                            key={o.id}
+                            className={`pd-vote-option ${
+                              selectedOption === o.id ? "selected" : ""
+                            }`}
+                            onClick={() => setSelectedOption(o.id)}
+                          >
+                            <span className="pd-radio" />
+                            <span className="pd-option-text">{o.text}</span>
+                          </div>
+                        ))}
                       </div>
-                    )}
 
-                  {/* SUCCESS */}
+                      <button
+                        className="pd-submit-gradient"
+                        disabled={selectedOption === null}
+                        onClick={handleVote}
+                      >
+                        Submit Vote
+                      </button>
+                    </div>
+                  )}
+
                   {hasVoted && (
                     <div className="pd-success-glass">
                       <div className="pd-success-icon">✓</div>
@@ -206,7 +181,6 @@ export default function PollDetails() {
                 </div>
               </div>
 
-              {/* RIGHT */}
               <div className="pd-right">
                 <PollResults options={poll.options} />
               </div>

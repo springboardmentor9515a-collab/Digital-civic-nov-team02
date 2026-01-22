@@ -14,7 +14,6 @@ const SignatureSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-// CHECKLIST: Compound Unique Index
 // Ensures one user cannot sign the same petition twice
 SignatureSchema.index({ petition: 1, user: 1 }, { unique: true });
 

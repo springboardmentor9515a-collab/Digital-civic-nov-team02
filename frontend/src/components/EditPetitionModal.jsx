@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "../styles/editPetition.css";
+import { editPetitionApi } from "../api/petitions";
 
 const CATEGORIES = [
   "Environment",
@@ -13,99 +14,111 @@ const CATEGORIES = [
   "Housing",
 ];
 
-export default function EditPetitionModal({
-  petition,
-  open,
-  onOpenChange,
-  onSaved,
-}) {
+export default function EditPetitionModal({ petition, open, onOpenChange, onSaved }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
-  const [goal, setGoal] = useState("");
+  const [goal, setGoal] = useState(100);
   const [description, setDescription] = useState("");
 
   const [search, setSearch] = useState("");
-  const [location, setLocation] = useState({
-    lat: null,
-    lng: null,
-    label: "",
-  });
+  const [location, setLocation] = useState({ lat: null, lng: null, label: "" });
   const [suggestions, setSuggestions] = useState([]);
 
-  /* LOAD EXISTING PETITION DATA */
-  useEffect(() => {
-    if (open && petition) {
-      setTitle(petition.title || "");
-      setCategory(petition.category || "");
-      setGoal(petition.goal || 100);
-      setDescription(petition.description || "");
-      setSearch(petition.location || "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-      fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${petition.location}&limit=1`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.length > 0) {
-            setLocation({
-              lat: Number(data[0].lat),
-              lng: Number(data[0].lon),
-              label: data[0].display_name,
-            });
-            setSearch(data[0].display_name);
-          }
-        })
-        .catch(() => {
+  useEffect(() => {
+    if (!open || !petition) return;
+
+    setError("");
+    setTitle(petition.title || "");
+    setCategory(petition.category || "");
+    setGoal(petition.goal || 100);
+    setDescription(petition.description || "");
+    setSearch(petition.location || "");
+
+    fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        petition.location || ""
+      )}&limit=1`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.length > 0) {
           setLocation({
-            lat: null,
-            lng: null,
-            label: petition.location || "",
+            lat: Number(data[0].lat),
+            lng: Number(data[0].lon),
+            label: data[0].display_name,
           });
-        });
-    }
+          setSearch(data[0].display_name);
+        } else {
+          setLocation({ lat: null, lng: null, label: petition.location || "" });
+        }
+      })
+      .catch(() => {
+        setLocation({ lat: null, lng: null, label: petition.location || "" });
+      });
   }, [open, petition]);
 
-  /* LOCATION AUTOCOMPLETE */
   useEffect(() => {
+    if (!open) return;
+
     if (search.length < 3) {
       setSuggestions([]);
       return;
     }
 
+    const controller = new AbortController();
+
     fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${search}&limit=5`
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        search
+      )}&limit=5`,
+      { signal: controller.signal }
     )
       .then((r) => r.json())
-      .then(setSuggestions)
+      .then((data) => setSuggestions(Array.isArray(data) ? data : []))
       .catch(() => setSuggestions([]));
-  }, [search]);
 
-  function handleSubmit(e) {
+    return () => controller.abort();
+  }, [search, open]);
+
+  async function handleSubmit(e) {
     e.preventDefault();
+    setError("");
 
-    // ✅ BACKEND-READY PAYLOAD
+    const petitionId = petition?._id || petition?.id;
+    if (!petitionId) {
+      setError("Invalid petition. Please refresh and try again.");
+      return;
+    }
+
+    if (!title.trim() || !description.trim() || !category || !search.trim()) {
+      setError("Please fill all required fields.");
+      return;
+    }
+
     const payload = {
-      id: petition?._id || petition?.id,
-      title,
+      title: title.trim(),
+      description: description.trim(),
       category,
-      goal: Number(goal),
-      description,
-      location: {
-        name: location.label || search,
-        coordinates:
-          location.lat && location.lng
-            ? [location.lng, location.lat]
-            : null,
-      },
+      goal: Number(goal) || 100,
+      location: location?.label ? { label: location.label } : search.trim(),
     };
 
-    // 🔗 API call will go here
-    // await updatePetition(payload)
+    try {
+      setSaving(true);
+      const res = await editPetitionApi(petitionId, payload);
+      const updated = res?.data?.petition || res?.data;
 
-    console.log("Updated Petition Payload:", payload);
-
-    onSaved?.(payload);
-    onOpenChange(false);
+      onSaved?.(updated);
+      onOpenChange(false);
+    } catch (err) {
+      console.error(err);
+      setError(err?.response?.data?.message || "Failed to update petition");
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (!open || !petition) return null;
@@ -124,18 +137,17 @@ export default function EditPetitionModal({
         </div>
 
         <form className="ep-form" onSubmit={handleSubmit}>
+          {error ? <div className="ep-error">{error}</div> : null}
+
           <div>
             <label className="ep-label">Petition Title</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <input value={title} onChange={(e) => setTitle(e.target.value)} disabled={saving} />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
               <label className="ep-label">Category</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
+              <select value={category} onChange={(e) => setCategory(e.target.value)} disabled={saving}>
                 <option value="">Select category</option>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>
@@ -151,6 +163,7 @@ export default function EditPetitionModal({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search location"
+                disabled={saving}
               />
 
               {suggestions.length > 0 && (
@@ -160,11 +173,7 @@ export default function EditPetitionModal({
                       key={s.place_id}
                       className="ep-suggestion"
                       onClick={() => {
-                        setLocation({
-                          lat: Number(s.lat),
-                          lng: Number(s.lon),
-                          label: s.display_name,
-                        });
+                        setLocation({ lat: Number(s.lat), lng: Number(s.lon), label: s.display_name });
                         setSearch(s.display_name);
                         setSuggestions([]);
                       }}
@@ -195,6 +204,7 @@ export default function EditPetitionModal({
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               min={1}
+              disabled={saving}
             />
           </div>
 
@@ -204,24 +214,16 @@ export default function EditPetitionModal({
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              disabled={saving}
             />
           </div>
 
-          <div className="ep-info">
-            ⚠️ By updating this petition, you acknowledge that the content is factual
-            and does not contain misleading information.
-          </div>
-
           <div className="ep-actions">
-            <button
-              type="button"
-              className="ep-cancel"
-              onClick={() => onOpenChange(false)}
-            >
+            <button type="button" className="ep-cancel" onClick={() => onOpenChange(false)} disabled={saving}>
               Cancel
             </button>
-            <button type="submit" className="ep-save">
-              Save Changes
+            <button type="submit" className="ep-save" disabled={saving}>
+              {saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>

@@ -1,8 +1,5 @@
 import http from "./http";
 
-/**
- * Create a new poll (Official only)
- */
 export const createPoll = (data) => {
   return http.post("/polls", {
     title: data.question,
@@ -11,23 +8,9 @@ export const createPoll = (data) => {
   });
 };
 
-/**
- * Get polls based on user location
- */
-export const getPolls = () => {
-  return http.get("/polls");
-};
+export const getPolls = () => http.get("/polls");
 
-/**
- * Get poll details + results
- */
-export const getPollById = (id) => {
-  return http.get(`/polls/${id}`);
-};
+export const getPollById = (id) => http.get(`/polls/${id}`);
 
-/**
- * Vote on a poll (Citizen only)
- */
-export const votePoll = (id, selectedOption) => {
-  return http.post(`/polls/${id}/vote`, { selectedOption });
-};
+export const votePoll = (id, optionIndex) =>
+  http.post(`/polls/${id}/vote`, { optionIndex });

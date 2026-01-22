@@ -10,9 +10,9 @@ const pollSchema = new mongoose.Schema(
 
     options: [
       {
-        text: { type: String, required: true },
-        votes: { type: Number, default: 0 }
-      }
+        text: { type: String, required: true, trim: true },
+        votes: { type: Number, default: 0 },
+      },
     ],
 
     createdBy: {
@@ -24,6 +24,7 @@ const pollSchema = new mongoose.Schema(
     targetLocation: {
       type: String,
       required: true,
+      trim: true,
     },
 
     voters: [
@@ -37,7 +38,7 @@ const pollSchema = new mongoose.Schema(
       type: String,
       enum: ["active", "closed"],
       default: "active",
-    }
+    },
   },
   { timestamps: true }
 );

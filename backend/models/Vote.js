@@ -15,6 +15,7 @@ const voteSchema = new mongoose.Schema(
     selectedOption: {
       type: String,
       required: true,
+      trim: true,
     },
   },
   { timestamps: true }

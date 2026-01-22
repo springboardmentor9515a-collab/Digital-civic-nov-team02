@@ -6,9 +6,9 @@ export default function CreatePollModal({ onClose }) {
   const { user } = useAuth();
 
   const [question, setQuestion] = useState("");
-  const [description, setDescription] = useState(""); // optional
+  const [description, setDescription] = useState(""); // optional (UI only)
   const [options, setOptions] = useState(["", ""]);
-  const [closeDate, setCloseDate] = useState("");
+  const [closeDate, setCloseDate] = useState(""); // UI only for now
 
   const [location, setLocation] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -16,9 +16,6 @@ export default function CreatePollModal({ onClose }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  /* =======================
-     LOCATION AUTOCOMPLETE
-     ======================= */
   useEffect(() => {
     if (!location || location.length < 3) {
       setSuggestions([]);
@@ -28,7 +25,9 @@ export default function CreatePollModal({ onClose }) {
     const fetchLocations = async () => {
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${location}&limit=5`,
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            location
+          )}&limit=5`,
           { headers: { "User-Agent": "CivixApp/1.0" } }
         );
         setSuggestions(await res.json());
@@ -40,17 +39,12 @@ export default function CreatePollModal({ onClose }) {
     fetchLocations();
   }, [location]);
 
-  /* =======================
-     OPTIONS HELPERS
-     ======================= */
   const addOption = () => {
     if (options.length < 10) setOptions([...options, ""]);
   };
 
   const removeOption = (i) => {
-    if (options.length > 2) {
-      setOptions(options.filter((_, idx) => idx !== i));
-    }
+    if (options.length > 2) setOptions(options.filter((_, idx) => idx !== i));
   };
 
   const updateOption = (i, val) => {
@@ -59,22 +53,19 @@ export default function CreatePollModal({ onClose }) {
     setOptions(copy);
   };
 
-  const getMaxDate = () => {
-    const d = new Date();
-    d.setDate(d.getDate() + 30);
-    return d.toISOString().split("T")[0];
-  };
-
-  /* =======================
-     SUBMIT POLL (CORRECTED)
-     ======================= */
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
-    const cleanedOptions = options.map(o => o.trim()).filter(Boolean);
+    if (user?.role !== "official") {
+      setError("Only officials can create polls.");
+      return;
+    }
 
-    if (!question.trim() || cleanedOptions.length < 2 || !location || !closeDate) {
+    const cleanedOptions = options.map((o) => o.trim()).filter(Boolean);
+
+    // ✅ Milestone-3: closeDate NOT required
+    if (!question.trim() || cleanedOptions.length < 2 || !location.trim()) {
       setError("Please fill all required fields.");
       return;
     }
@@ -84,25 +75,20 @@ export default function CreatePollModal({ onClose }) {
 
       const res = await fetch("/api/polls", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // JWT cookie
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           title: question.trim(),
           options: cleanedOptions,
-          targetLocation: location,
-          closeDate,        // ✅ NOW SENT
-          description,      // ✅ optional but consistent
+          targetLocation: location.trim(),
         }),
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.message || "Failed to create poll");
       }
 
-      // ✅ reset form (important)
       setQuestion("");
       setDescription("");
       setOptions(["", ""]);
@@ -111,7 +97,6 @@ export default function CreatePollModal({ onClose }) {
 
       onClose();
     } catch (err) {
-      console.error(err);
       setError(err.message || "Unable to create poll. Please try again.");
     } finally {
       setLoading(false);
@@ -126,7 +111,9 @@ export default function CreatePollModal({ onClose }) {
             <h2>Create a New Poll</h2>
             <p>Create a poll to gather community feedback on local issues.</p>
           </div>
-          <button className="cp-close" onClick={onClose}>✕</button>
+          <button className="cp-close" onClick={onClose}>
+            ✕
+          </button>
         </div>
 
         <form className="cp-form" onSubmit={handleSubmit}>
@@ -181,7 +168,7 @@ export default function CreatePollModal({ onClose }) {
 
             {suggestions.length > 0 && (
               <div className="cp-suggestions">
-                {suggestions.map(s => (
+                {suggestions.map((s) => (
                   <div
                     key={s.place_id}
                     className="cp-suggestion"
@@ -197,11 +184,10 @@ export default function CreatePollModal({ onClose }) {
             )}
           </div>
 
-          <label className="cp-label">Closes On *</label>
+          {/* UI-only field (not required by backend for MS-3) */}
+          <label className="cp-label">Closes On (optional)</label>
           <input
             type="date"
-            min={new Date().toISOString().split("T")[0]}
-            max={getMaxDate()}
             value={closeDate}
             onChange={(e) => setCloseDate(e.target.value)}
             className="cp-date"

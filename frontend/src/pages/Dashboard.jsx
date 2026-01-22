@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthProvider";
-import http from "../api/http"; // ✅ FIXED IMPORT
+import http from "../api/http";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import StatCard from "../components/StatCard";
@@ -85,26 +85,24 @@ const DashboardPetitionCard = ({ petition }) => {
    DASHBOARD PAGE
 =========================== */
 export default function Dashboard() {
-  const { user, loading } = useAuth(); // ✅ FIX: include loading
+  const { user, loading } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
+
   const [petitions, setPetitions] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  /* 🔒 AUTH SAFETY (CRITICAL FIX) */
-  if (loading) {
-    return <div style={{ padding: "40px" }}>Loading dashboard...</div>;
-  }
+  // ✅ Milestone-3: polls state for Polls Created card
+  const [polls, setPolls] = useState([]);
 
-  if (!user) {
-    return <div style={{ padding: "40px" }}>Please login again</div>;
-  }
+  if (loading) return <div style={{ padding: "40px" }}>Loading dashboard...</div>;
+  if (!user) return <div style={{ padding: "40px" }}>Please login again</div>;
 
   /* 📥 FETCH PETITIONS */
   useEffect(() => {
     const fetchPetitions = async () => {
       try {
-        const res = await http.get("/petitions"); // ✅ FIXED API CALL
-        setPetitions(res.data);
+        const res = await http.get("/petitions");
+        setPetitions(res.data || []);
       } catch (err) {
         console.error("Failed to load petitions", err);
       }
@@ -112,10 +110,30 @@ export default function Dashboard() {
     fetchPetitions();
   }, []);
 
-  /* 🔍 FILTER */
+  /* ✅ Milestone-3: FETCH POLLS */
+  useEffect(() => {
+    const fetchPolls = async () => {
+      try {
+        const res = await http.get("/polls");
+        setPolls(res.data || []);
+      } catch (err) {
+        console.error("Failed to load polls", err);
+        setPolls([]);
+      }
+    };
+    fetchPolls();
+  }, []);
+
+  /* 🔍 FILTER PETITIONS */
   const filteredPetitions = petitions.filter((p) =>
     selectedCategory === "All" ? true : p.category === selectedCategory
   );
+
+  // ✅ Polls Created logic
+  const pollsCreatedCount =
+    user.role === "official"
+      ? polls.filter((p) => String(p.createdBy) === String(user._id) || String(p.createdBy?._id) === String(user._id)).length
+      : polls.length;
 
   const stats = [
     {
@@ -131,8 +149,8 @@ export default function Dashboard() {
       type: "green",
     },
     {
-      title: "Polls Created",
-      value: 0,
+      title: user.role === "official" ? "Polls Created" : "Active Polls",
+      value: pollsCreatedCount,
       subtitle: "polls",
       type: "purple",
     },
@@ -163,10 +181,7 @@ export default function Dashboard() {
                 <p>See what's happening in your community</p>
               </div>
 
-              <button
-                className="db-primary-btn"
-                onClick={() => setShowCreate(true)}
-              >
+              <button className="db-primary-btn" onClick={() => setShowCreate(true)}>
                 Create Petition
               </button>
             </div>
@@ -190,8 +205,7 @@ export default function Dashboard() {
                     padding: "6px 14px",
                     borderRadius: "20px",
                     border: "none",
-                    background:
-                      selectedCategory === c ? "#4F46E5" : "#E5E7EB",
+                    background: selectedCategory === c ? "#4F46E5" : "#E5E7EB",
                     color: selectedCategory === c ? "white" : "#374151",
                   }}
                 >
@@ -204,8 +218,7 @@ export default function Dashboard() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns:
-                    "repeat(auto-fill, minmax(300px, 1fr))",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
                   gap: "20px",
                 }}
               >
@@ -220,9 +233,7 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {showCreate && (
-        <CreatePetitionModal onClose={() => setShowCreate(false)} />
-      )}
+      {showCreate && <CreatePetitionModal onClose={() => setShowCreate(false)} />}
     </div>
   );
 }

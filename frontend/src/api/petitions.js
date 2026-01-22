@@ -29,6 +29,12 @@ export const signPetitionApi = (id) => {
   return http.post(`/petitions/${id}/sign`);
 };
 
+// ✅ Milestone-2: Officials view local petitions
+export const getLocalPetitionsApi = () => {
+  return http.get("/petitions/local");
+};
+
+/* Future endpoints (keep if your project uses them later) */
 export const getPetitionSignaturesApi = (id) => {
   return http.get(`/petitions/${id}/signatures`);
 };
@@ -41,7 +47,7 @@ export const getUserSignedPetitionsApi = (userId) => {
 };
 export const getUserCreatedPetitionsApi = (userId) => {
   return http.get(`/users/${userId}/created-petitions`);
-};  
+};
 export const getTrendingPetitionsApi = () => {
   return http.get(`/petitions/trending`);
 };
@@ -53,7 +59,7 @@ export const getMostSignedPetitionsApi = () => {
 };
 export const getClosingSoonPetitionsApi = () => {
   return http.get(`/petitions/closing-soon`);
-};  
+};
 export const getFeaturedPetitionsApi = () => {
   return http.get(`/petitions/featured`);
 };

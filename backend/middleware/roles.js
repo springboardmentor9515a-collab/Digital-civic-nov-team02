@@ -1,22 +1,26 @@
-// middleware/roles.js
-
 const isCitizen = (req, res, next) => {
-  // Checks if the logged-in user has the role "citizen"
-  if (req.user && req.user.role === "citizen") {
-    next();
-  } else {
-    res.status(403).json({ message: "Access denied. Citizens only." });
-  }
+  if (req.user && req.user.role === "citizen") return next();
+  return res.status(403).json({ message: "Access denied. Citizens only." });
 };
 
 const isOfficial = (req, res, next) => {
-  // Checks if the logged-in user has the role "official"
-  if (req.user && req.user.role === "official") {
-    next();
-  } else {
-    res.status(403).json({ message: "Access denied. Officials only." });
-  }
+  if (req.user && req.user.role === "official") return next();
+  return res.status(403).json({ message: "Access denied. Officials only." });
 };
 
-// This exports BOTH functions so other files can find them
-module.exports = { isCitizen, isOfficial };
+// ✅ NEW: Generic role guard (Milestone 4 compatible)
+const roles = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: "Access denied.",
+      });
+    }
+    next();
+  };
+};
+
+// ✅ Export everything (no breaking changes)
+module.exports = roles;
+module.exports.isCitizen = isCitizen;
+module.exports.isOfficial = isOfficial;

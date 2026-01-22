@@ -30,26 +30,31 @@ export default function Polls() {
       setLoading(true);
       setError(null);
 
-      const res = await fetch("/api/polls");
-      if (!res.ok) throw new Error("Failed to fetch polls");
+      // ✅ FIX: auth uses cookie, so include credentials
+      const res = await fetch("/api/polls", { credentials: "include" });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to fetch polls");
+      }
 
       const data = await res.json();
 
-      const normalized = data.map((p) => ({
+      const normalized = (data || []).map((p) => ({
         id: p._id,
         question: p.title,
         location: p.targetLocation,
         status: p.status,
         createdAt: p.createdAt,
-        votes: p.options
-          ? p.options.reduce((sum, o) => sum + o.votes, 0)
+        votes: Array.isArray(p.options)
+          ? p.options.reduce((sum, o) => sum + (Number(o.votes) || 0), 0)
           : 0,
       }));
 
       setPolls(normalized);
     } catch (err) {
       console.error(err);
-      setError("Unable to load polls");
+      setError(err?.message || "Unable to load polls");
     } finally {
       setLoading(false);
     }
@@ -74,7 +79,9 @@ export default function Polls() {
     const fetchLocations = async () => {
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${locationFilter}&limit=5`,
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            locationFilter
+          )}&limit=5`,
           {
             headers: {
               Accept: "application/json",
@@ -83,7 +90,7 @@ export default function Polls() {
           }
         );
         const data = await res.json();
-        setSuggestions(data);
+        setSuggestions(Array.isArray(data) ? data : []);
       } catch {
         setSuggestions([]);
       }
@@ -182,7 +189,7 @@ export default function Polls() {
                   (p) =>
                     (activeTab === "all" || p.status === activeTab) &&
                     (!locationFilter ||
-                      p.location
+                      (p.location || "")
                         .toLowerCase()
                         .includes(locationFilter.toLowerCase()))
                 )
@@ -203,8 +210,12 @@ export default function Polls() {
                       <span>👥 {poll.votes} votes</span>
                     </div>
 
+                    {/* ✅ cleaner date */}
                     <div className="pl-date">
-                      Created {poll.createdAt}
+                      Created{" "}
+                      {poll.createdAt
+                        ? new Date(poll.createdAt).toLocaleDateString()
+                        : "-"}
                     </div>
                   </div>
                 ))}
@@ -218,7 +229,7 @@ export default function Polls() {
         <CreatePollModal
           onClose={() => {
             setShowCreatePoll(false);
-            fetchPolls(); // ✅ refresh list after creation
+            fetchPolls();
           }}
         />
       )}

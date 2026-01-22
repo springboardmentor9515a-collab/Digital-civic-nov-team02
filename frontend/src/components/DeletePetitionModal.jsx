@@ -6,11 +6,11 @@ export default function DeletePetitionModal({
   open,
   onClose,
   onConfirm,
+  loading = false,
+  error = "",
 }) {
-  // ✅ Guard against async / missing data
   if (!open || !petition) return null;
 
-  // ✅ Backend-safe ID handling
   const petitionId = petition._id || petition.id;
 
   return (
@@ -20,23 +20,22 @@ export default function DeletePetitionModal({
 
         <p className="dp-text">
           Are you sure you want to delete{" "}
-          <strong>
-            "{petition.title || "this petition"}"
-          </strong>
-          ? This action cannot be undone.
+          <strong>"{petition.title || "this petition"}"</strong>? This action cannot be undone.
         </p>
 
+        {error ? <div className="dp-error">{error}</div> : null}
+
         <div className="dp-actions">
-          <button className="dp-cancel" onClick={onClose}>
+          <button className="dp-cancel" onClick={onClose} disabled={loading}>
             Cancel
           </button>
 
           <button
             className="dp-delete"
             onClick={() => onConfirm(petitionId)}
-            disabled={!petitionId}
+            disabled={!petitionId || loading}
           >
-            Delete
+            {loading ? "Deleting..." : "Delete"}
           </button>
         </div>
       </div>
